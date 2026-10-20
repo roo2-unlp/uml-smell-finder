@@ -1,0 +1,34 @@
+@startuml
+abstract class Figura {
+    # color : Color
+    +{abstract} area() : Real
+    +{abstract} perimetro() : Real
+}
+
+class Circulo extends Figura {
+    -radio : Real
+    +area() : Real
+    +perimetro() : Real
+}
+
+class Rectangulo extends Figura {
+    -base : Real
+    -altura : Real
+    +area() : Real
+    +perimetro() : Real
+}
+
+interface Dibujable {
+    +dibujar(lienzo : Lienzo) : void
+}
+
+enum Color {
+    ROJO
+    VERDE
+    AZUL
+}
+
+Circulo ..|> Dibujable
+Rectangulo ..|> Dibujable
+Figura --> "1" Color : - color
+@enduml
