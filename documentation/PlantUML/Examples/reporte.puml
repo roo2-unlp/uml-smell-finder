@@ -3,7 +3,7 @@
 class Alumno {
     - legajo : String
     - nombre : String
-    - notas : Integer[*]
+    - notas : Integer[]
     + promedio() : Real
     + print() : void
 }

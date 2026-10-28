@@ -1,22 +1,13 @@
-# ANTLR4: guía para este proyecto
+# ANTLR4 en este proyecto
 
-## ¿Qué es ANTLR?
+## Qué es ANTLR
 
-[**ANTLR**](https://www.antlr.org/) (ANother Tool for Language Recognition) es una herramienta que, a partir de una **gramática** (un archivo `.g4` que describe cómo se escribe un lenguaje), **genera código Java** capaz de leer textos en ese lenguaje y convertirlos en un **árbol** que podemos recorrer desde nuestro programa.
+[ANTLR](https://www.antlr.org/) toma una gramática (un archivo `.g4` que describe un lenguaje) y genera código Java que lee texto en ese lenguaje y lo convierte en un árbol. En este proyecto el lenguaje es PlantUML: entra un diagrama de clases y sale un árbol con sus clases, atributos, métodos y relaciones, que después recorren los sniffers.
 
-En este proyecto el lenguaje es PlantUML: le damos un diagrama como texto y obtenemos un árbol con sus clases, atributos, métodos y relaciones. Sobre ese árbol buscamos malos olores de diseño.
+El análisis tiene dos etapas:
 
-El proceso tiene dos etapas:
-
-1. **Lexer** (análisis léxico): corta el texto en **tokens**, como cuando separamos una oración en palabras. Por ejemplo, `+print() : void` se convierte en:
-    - '+'
-    - IDENTIFIER(print)
-    - '('
-    - ')'
-    - ':'
-    - IDENTIFIER(void)
-
-2. **Parser** (análisis sintáctico): agrupa los tokens según las reglas de la gramática y arma el **árbol de parseo**. Para el diagrama:
+1. El **lexer** corta el texto en tokens. `+print() : void` queda como `'+'`, `IDENTIFIER(print)`, `'('`, `')'`, `':'`, `IDENTIFIER(void)`.
+2. El **parser** agrupa los tokens según las reglas de la gramática y arma el árbol. Para este diagrama:
 
    ```plantuml
    @startuml
@@ -26,7 +17,7 @@ El proceso tiene dos etapas:
    @enduml
    ```
 
-   el árbol queda (simplificado):
+   el árbol es, simplificado:
 
    ```text
    diagram
@@ -49,170 +40,154 @@ El proceso tiene dos etapas:
 
 ## Instalación
 
-**No hace falta instalar ANTLR a mano.** El proyecto lo usa a través de Maven, que lo descarga solo la primera vez que lo necesita. Está declarado en el [`pom.xml`](../../pom.xml) de dos formas:
+No hay que instalar nada además de lo que pide el [README](../../README.md#wrench-requisitos). ANTLR está declarado en el [`pom.xml`](../../pom.xml) y Maven lo descarga:
 
-| Qué                   | Para qué sirve                                                       |
-|-----------------------|----------------------------------------------------------------------|
-| `antlr4-maven-plugin` | **Genera** las clases Java a partir de los archivos `.g4`.           |
-| `antlr4-runtime`      | Biblioteca que esas clases necesitan para **ejecutarse**.            |
+- `antlr4-maven-plugin` genera las clases Java a partir de los `.g4`.
+- `antlr4-runtime` es la biblioteca que esas clases usan al ejecutarse.
 
+## Clases generadas
 
-Lo único que necesitás instalar es:
+La gramática está dividida en dos archivos, en [`src/main/antlr4/oo2/redictado/plantuml/antlr4`](../../src/main/antlr4/oo2/redictado/plantuml/antlr4/):
 
-- **Java 21** (o superior). Verificalo con `java -version`.
-- **Maven** (opcional). El proyecto trae el wrapper `mvnw` / `mvnw.cmd`, que descarga Maven solo. Si no querés instalarlo, reemplazá `mvn` por `./mvnw` (Linux / macOS) o `mvnw.cmd` (Windows) en todos los comandos.
+- [`PlantUmlLexer.g4`](../../src/main/antlr4/oo2/redictado/plantuml/antlr4/PlantUmlLexer.g4): los tokens.
+- [`PlantUmlParser.g4`](../../src/main/antlr4/oo2/redictado/plantuml/antlr4/PlantUmlParser.g4): cómo se combinan.
 
-## Generar las clases
-
-Las gramáticas están en [`src/main/antlr4`](../../src/main/antlr4/):
-
-- [`PlantUmlLexer.g4`](../../src/main/antlr4/PlantUmlLexer.g4): reglas del **lexer** (qué es un token).
-- [`PlantUmlParser.g4`](../../src/main/antlr4/PlantUmlParser.g4): reglas del **parser** (cómo se combinan los tokens).
-
-Para generar (o regenerar) las clases Java, desde la raíz del proyecto ejecutá:
-
-```bash
-mvn antlr4:antlr4
-```
-
-Esto crea los siguientes archivos en [`src/main/java/oo2/redictado/antlr4`](../../src/main/java/oo2/redictado/antlr4/):
+Cada vez que compilás (`mvn compile`, `mvn test`, etc.), Maven genera las clases en `target/generated-sources/antlr4`, en el paquete `oo2.redictado.plantuml.antlr4`, que sale de la carpeta de la gramática. Para generarlas sin compilar, usá `mvn generate-sources`.
 
 | Archivo                          | Qué es                                                                 |
 |----------------------------------|------------------------------------------------------------------------|
-| `PlantUmlLexer.java`             | El lexer: convierte el texto en tokens.                                |
-| `PlantUmlParser.java`            | El parser: convierte los tokens en un árbol. Tiene un método por regla (`diagram()`, `classDeclaration()`, ...) y una clase `XXContext` por regla, que representa un nodo del árbol. |
-| `PlantUmlParserVisitor.java`     | Interfaz con un método `visitXX` por cada regla de la gramática.      |
-| `PlantUmlParserBaseVisitor.java` | Implementación por defecto del visitor: visita todos los hijos. **De acá heredan nuestros sniffers.** |
-| `*.tokens` y `*.interp`          | Archivos auxiliares que usa ANTLR. No hace falta abrirlos.             |
+| `PlantUmlLexer.java`             | El lexer.                                                              |
+| `PlantUmlParser.java`            | El parser. Tiene un método por regla (`diagram()`, `classDeclaration()`, ...) y una clase `XXContext` por regla, que es el tipo de los nodos del árbol. |
+| `PlantUmlParserVisitor.java`     | Interfaz con un `visitXX` por regla.                                   |
+| `PlantUmlParserBaseVisitor.java` | Implementación que visita todos los hijos. [`PlantUmlVisitor`](../../src/main/java/oo2/redictado/plantuml/PlantUmlVisitor.java) hereda de esta clase. |
+| `*.tokens` y `*.interp`          | Archivos auxiliares de ANTLR.                                          |
 
-> [!IMPORTANT]
-> - **No edites a mano** los archivos generados: se pisan cada vez que regenerás.
-> - **Cada vez que modifiques un `.g4` tenés que volver a ejecutar `mvn antlr4:antlr4`.** `mvn test` no lo hace solo. Si te aparece un error como `cannot find symbol: visitMiNuevaRegla`, seguramente te olvidaste de regenerar.
+Estas clases no están en git y se pisan en cada build, así que no tiene sentido editarlas. Si el IDE no encuentra el paquete `oo2.redictado.plantuml.antlr4`, corré `mvn compile` y recargá el proyecto Maven.
 
 ## Cómo leer la gramática
 
-Una gramática es una lista de reglas con la forma `nombre : definición ;`.
+Cada regla tiene la forma `nombre : definición ;`. Las que están en mayúsculas son del lexer y definen tokens (`CLASS : 'class' ;`). Las que están en minúsculas son del parser y definen la estructura (`classBody : LBRACE bodyItem* RBRACE ;`).
 
-- Las reglas en **MAYÚSCULAS** son del lexer y definen tokens: `CLASS : 'class' ;`
-- Las reglas en **minúsculas** son del parser y definen la estructura: `classBody : LBRACE bodyItem* RBRACE ;`
+| Operador   | Significado                            | Ejemplo                                 |
+|------------|----------------------------------------|-----------------------------------------|
+| `a b`      | `a` seguido de `b`                     | `AS alias`                              |
+| `a \| b`   | `a` o `b`                              | `PLUS \| MINUS \| HASH \| TILDE`        |
+| `a?`       | `a` opcional                           | `visibility?`                           |
+| `a*`       | `a` cero o más veces                   | `element*`                              |
+| `a+`       | `a` una o más veces                    | `'-'+`                                  |
+| `( ... )`  | agrupa                                 | `(COMMA param)*`                        |
+| `~X`       | cualquier token menos `X`              | `(~NEWLINE)*`                           |
+| `[a-z]`    | rango de caracteres (solo en el lexer) | `[a-zA-Z_]`                             |
+| `-> skip`  | el lexer descarta el token             | `WS : [ \t]+ -> skip ;`                 |
 
-Operadores que vas a ver:
+Dos reglas del lexer explican la mayoría de los errores raros:
 
-| Operador   | Significado                           | Ejemplo                                   |
-|------------|---------------------------------------|-------------------------------------------|
-| `a b`      | `a` seguido de `b`                    | `AS alias`                                |
-| `a \| b`   | `a` o `b`                             | `PLUS \| MINUS \| HASH \| TILDE`          |
-| `a?`       | `a` es opcional (0 o 1 vez)           | `visibility?`                             |
-| `a*`       | `a` se repite 0 o más veces           | `element*`                                |
-| `a+`       | `a` se repite 1 o más veces           | `'-'+`                                    |
-| `( ... )`  | agrupa                                | `(COMMA param)*`                          |
-| `~X`       | cualquier token **menos** `X`         | `(~NEWLINE)*` (todo hasta fin de línea)   |
-| `[a-z]`    | rango de caracteres (solo en el lexer)| `[a-zA-Z_]`                               |
-| `-> skip`  | el lexer descarta ese token           | `WS : [ \t]+ -> skip ;`                   |
+1. Si varios tokens matchean, gana el más largo. Por eso `-->` es un `ARROW` y no tres `MINUS`.
+2. Si empatan en largo, gana el que está definido primero. Por eso `class` es `CLASS` y no `IDENTIFIER`.
 
-Dos detalles del lexer que conviene conocer, porque explican muchos errores:
+El parser toma los tokens del lexer con `options { tokenVocab=PlantUmlLexer; }`.
 
-1. **Gana el token más largo.** Por eso `-->` es un `ARROW` y no tres `MINUS`.
-2. **Si empatan en largo, gana la regla que aparece primero.** Por eso `class` es `CLASS` y no `IDENTIFIER`: `CLASS` está definida antes.
+## Recorrer el árbol con un visitor
 
-Como el lexer y el parser están en archivos separados, el parser indica de dónde sacar los tokens con `options { tokenVocab=PlantUmlLexer; }`.
-
-## Usar el árbol desde Java: el Visitor
-
-Cada sniffer hace siempre lo mismo (ver [`PrintSniffer.java`](../../src/main/java/oo2/redictado/PrintSniffer/PrintSniffer.java)):
+El parseo lo hace [`PlantUml`](../../src/main/java/oo2/redictado/plantuml/PlantUml.java), una sola vez para todos los sniffers:
 
 ```java
-CharStream stream = CharStreams.fromString(code);           // 1. el texto
-PlantUmlLexer lexer = new PlantUmlLexer(stream);            // 2. texto -> tokens
-CommonTokenStream tokens = new CommonTokenStream(lexer);
-PlantUmlParser parser = new PlantUmlParser(tokens);         // 3. tokens -> árbol
-ParseTree tree = parser.diagram();                          //    empezando por la regla 'diagram'
+PlantUmlLexer lexer = new PlantUmlLexer(CharStreams.fromString(code));   // texto -> tokens
+PlantUmlParser parser = new PlantUmlParser(new CommonTokenStream(lexer)); // tokens -> árbol
+
+DiagramContext diagram = parser.diagram();   // el árbol empieza en la regla diagram
+if (parser.getNumberOfSyntaxErrors() > 0) {
+    throw new IllegalArgumentException("Syntax error");
+}
 ```
 
-Después recorre el árbol con un **visitor**: una clase que hereda de `PlantUmlParserBaseVisitor` y redefine solo los `visitXX` de las reglas que le interesan. Por ejemplo, [`PrintSnifferVisitor`](../../src/main/java/oo2/redictado/PrintSniffer/PrintSnifferVisitor.java) solo mira las firmas de métodos:
+Un sniffer solo dice qué visitor usar para recorrer ese árbol:
+
+```java
+public class PrintSniffer extends PlantUmlSniffer {
+    @Override
+    protected PlantUmlVisitor createVisitor() {
+        return new PrintSnifferVisitor();
+    }
+}
+```
+
+El visitor extiende [`PlantUmlVisitor`](../../src/main/java/oo2/redictado/plantuml/PlantUmlVisitor.java), redefine los `visitXX` de las reglas que le interesan y llama a `smell(mensaje, nodo)` por cada olor. Del nodo se saca la línea del diagrama. [`PrintSnifferVisitor`](../../src/main/java/oo2/redictado/sniffers/print/PrintSnifferVisitor.java) solo mira las firmas de métodos:
 
 ```java
 @Override
 public Void visitMethodSignature(PlantUmlParser.MethodSignatureContext ctx) {
     if (ctx.IDENTIFIER().getText().equals("print")) {
-        report.addAroma(new Aroma(this.callerName, "The diagram has print methods.", true));
+        this.smell("The diagram has print methods.", ctx);
     }
-    return visitChildren(ctx);   // seguir recorriendo los hijos
+    return visitChildren(ctx);
 }
 ```
 
-- El parámetro `ctx` es el **nodo** del árbol. Tiene un método por cada elemento de la regla. Como la regla es `methodSignature : type? IDENTIFIER LPAREN paramList? RPAREN (COLON type)? ;`, podés pedirle `ctx.IDENTIFIER()`, `ctx.paramList()`, etc. Si un elemento es opcional y no está, devuelve `null`. Si un elemento puede aparecer más de una vez (como `type`), el método devuelve una lista: `ctx.type()` es una `List<TypeContext>` y `ctx.type(0)` es el primero.
-- `getText()` devuelve el texto que corresponde a ese nodo.
-- `visitChildren(ctx)` sigue recorriendo hacia abajo. Si no lo llamás, los hijos de ese nodo no se visitan.
-- El tipo genérico (`Void`, `Boolean`, ...) es lo que devuelve cada `visit`. Usá `Void` (y `return visitChildren(ctx)`) si no necesitás devolver nada.
+Cada `smell(...)` agrega un `Aroma` al reporte, con el nombre de la clase del sniffer. Ese nombre se puede cambiar redefiniendo `name()`.
 
-> [!TIP]
-> Para saber qué métodos tiene un `XXContext`, buscá la clase en `PlantUmlParser.java`.
+Algunas cosas a tener en cuenta:
+
+- `ctx` es el nodo del árbol y tiene un método por cada elemento de su regla. Como `methodSignature : type? IDENTIFIER LPAREN paramList? RPAREN (COLON type)? ;`, se puede pedir `ctx.IDENTIFIER()`, `ctx.paramList()`, etc. Si un elemento opcional no está, devuelve `null`. Si puede aparecer más de una vez, como `type`, devuelve una lista (`ctx.type()`) y también se puede pedir uno por posición (`ctx.type(0)`).
+- `getText()` devuelve el texto del nodo.
+- `visitChildren(ctx)` sigue con los hijos. Si no lo llamás, esa parte del árbol no se recorre, así que lo normal es terminar con `return visitChildren(ctx);`.
+- Cada análisis usa un visitor nuevo, así que se puede guardar estado en atributos, por ejemplo para contar algo y decidir al final redefiniendo `visitDiagram`.
+- Cuando los sniffers corren juntos, cada uno recibe su propia copia del árbol, así que modificarla no afecta a los demás.
+
+Los métodos de cada `XXContext` están en `PlantUmlParser.java`.
 
 ## Crear un nuevo sniffer
 
-1. Creá una carpeta/paquete propio en [`src/main/java/oo2/redictado`](../../src/main/java/oo2/redictado/), por ejemplo `GodClassSniffer`.
-2. Copiá `PrintSniffer.java` y `PrintSnifferVisitor.java` como punto de partida y renombralos.
-3. Buscá en [`PlantUmlParser.g4`](../../src/main/antlr4/PlantUmlParser.g4) qué regla representa lo que querés analizar (una clase es `classDeclaration`, un atributo es `fieldSignature`, una relación es `relationship`, etc.) y redefiní su `visitXX`.
-4. Escribí los tests en [`src/test/java/oo2/redictado`](../../src/test/java/oo2/redictado/) y la documentación en [`documentation`](../).
-5. Ejecutá `mvn test`.
+1. Creá un paquete dentro de [`oo2.redictado.sniffers`](../../src/main/java/oo2/redictado/sniffers/), en minúsculas, por ejemplo `misniffer`.
+2. Creá dos clases, siguiendo el modelo de [`PrintSniffer`](../../src/main/java/oo2/redictado/sniffers/print/):
+   - `MiSniffer extends PlantUmlSniffer`, que implementa `createVisitor()`.
+   - `MiVisitor extends PlantUmlVisitor`, con la lógica de detección.
+3. Buscá en [`PlantUmlParser.g4`](../../src/main/antlr4/oo2/redictado/plantuml/antlr4/PlantUmlParser.g4) la regla que representa lo que querés analizar y redefiní su `visitXX`. Por ejemplo, una clase es `classDeclaration`, un atributo es `fieldSignature` y una relación es `relationship`.
+4. Escribí los tests en el mismo paquete bajo `src/test/java`, por ejemplo `src/test/java/oo2/redictado/sniffers/misniffer/MiSnifferTest.java`. Para analizar un diagrama usá `new SmellFinder<>(new PlantUml(), new MiSniffer()).sniff(codigo)`, como en [`PrintSnifferTest`](../../src/test/java/oo2/redictado/sniffers/print/PrintSnifferTest.java).
+5. Documentalo en una carpeta propia dentro de [`documentation`](../).
+6. Registralo con una línea en `catalog()` de [`UmlSmellFinder`](../../src/main/java/oo2/redictado/UmlSmellFinder.java), con el nombre que se va a usar para elegirlo desde la línea de comandos:
 
-## Ver el árbol de un diagrama
+   ```java
+   catalog.add("MiSniffer", params -> new MiSniffer());
+   ```
 
-Antes de escribir un visitor, conviene **mirar el árbol** que genera ANTLR para un diagrama concreto. Hay varias opciones:
+7. Corré `mvn test`.
 
-### VS Code
+### Parámetros
 
-Instalá la extensión [ANTLR4 grammar syntax support](https://marketplace.visualstudio.com/items?itemName=mike-lischke.vscode-antlr4). Además de colorear los `.g4`, permite depurar la gramática y ver el árbol gráficamente. Para eso creá un archivo `.vscode/launch.json` en la raíz del proyecto:
+Si el sniffer necesita valores configurables, como un umbral, agregale un constructor que reciba un [`SnifferParams`](../../src/main/java/oo2/redictado/core/SnifferParams.java) y leelos por nombre, con un valor por defecto:
 
-```json
-{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "Ver árbol PlantUML",
-      "type": "antlr-debug",
-      "request": "launch",
-      "input": "documentation/PlantUML/Examples/biblioteca.puml",
-      "grammar": "src/main/antlr4/PlantUmlParser.g4",
-      "startRule": "diagram",
-      "visualParseTree": true
+```java
+public class MiSniffer extends PlantUmlSniffer {
+    private final int umbral;
+
+    public MiSniffer(SnifferParams params) {
+        this(params.getInt("umbral", 20));
     }
-  ]
+
+    public MiSniffer(int umbral) {
+        this.umbral = umbral;
+    }
+
+    @Override
+    protected PlantUmlVisitor createVisitor() {
+        return new MiVisitor(this.umbral);
+    }
 }
 ```
 
-y ejecutalo desde la pestaña *Run and Debug* (F5).
+Al registrarlo, usá ese constructor:
 
-### IntelliJ IDEA
-
-Instalá el plugin **ANTLR v4** (*Settings → Plugins*). Abrí `PlantUmlParser.g4`, hacé clic derecho sobre la regla `diagram` → *Test Rule diagram*, y pegá el diagrama en el panel *ANTLR Preview*.
-
-### Terminal (antlr4-tools)
-
-Con Python instalado:
-
-```bash
-pip install antlr4-tools
+```java
+catalog.add("MiSniffer", MiSniffer::new);
 ```
 
-Y desde la raíz del proyecto:
+Desde la línea de comandos se pasan con `--sniffers MiSniffer:umbral=30`. Si no se pasan, se usa el valor por defecto. En los tests es más cómodo usar el otro constructor: `new MiSniffer(5)`.
 
-```bash
-# Muestra los tokens que genera el lexer
-antlr4-parse -v 4.13.2 src/main/antlr4/PlantUmlLexer.g4 src/main/antlr4/PlantUmlParser.g4 diagram -tokens documentation/PlantUML/Examples/reporte.puml
+`SnifferParams` también tiene `getString`, `getDouble` y `getBoolean`. Un sniffer sin parámetros no necesita nada de esto. Si se le pasa alguno desde la línea de comandos, es un error.
 
-# Muestra el árbol como texto
-antlr4-parse -v 4.13.2 src/main/antlr4/PlantUmlLexer.g4 src/main/antlr4/PlantUmlParser.g4 diagram -tree documentation/PlantUML/Examples/reporte.puml
+## Más información
 
-# Abre una ventana con el árbol dibujado
-antlr4-parse -v 4.13.2 src/main/antlr4/PlantUmlLexer.g4 src/main/antlr4/PlantUmlParser.g4 diagram -gui documentation/PlantUML/Examples/reporte.puml
-```
-
-La primera vez descarga ANTLR (por eso necesita conexión a internet).
-
-## Para saber más
-
-- [Sitio oficial de ANTLR](https://www.antlr.org/)
-- [Documentación oficial](https://github.com/antlr/antlr4/blob/master/doc/index.md)
-- [Gramáticas de ejemplo para muchos lenguajes](https://github.com/antlr/grammars-v4)
+- [Sitio de ANTLR](https://www.antlr.org/)
+- [Documentación](https://github.com/antlr/antlr4/blob/master/doc/index.md)
+- [Gramáticas de otros lenguajes](https://github.com/antlr/grammars-v4)

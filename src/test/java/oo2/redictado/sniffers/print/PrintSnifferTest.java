@@ -1,17 +1,21 @@
-package oo2.redictado;
+package oo2.redictado.sniffers.print;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import oo2.redictado.PrintSniffer.PrintSniffer;
+import oo2.redictado.core.Aroma;
+import oo2.redictado.core.AromaReport;
+import oo2.redictado.core.SmellFinder;
+import oo2.redictado.plantuml.PlantUml;
+import oo2.redictado.plantuml.antlr4.PlantUmlParser.DiagramContext;
 
 public class PrintSnifferTest {
-    PrintSniffer codeSniffer;
+    SmellFinder<DiagramContext> finder;
 
     @BeforeEach
     public void setUp() {
-        codeSniffer = new PrintSniffer();
+        finder = new SmellFinder<>(new PlantUml(), new PrintSniffer());
     }
 
     @Test
@@ -23,11 +27,13 @@ public class PrintSnifferTest {
                }
                @enduml
                """;
-        AromaReport report = new AromaReport(code);
-        codeSniffer.sniff(code, report);
+        AromaReport report = finder.sniff(code);
 
         assertTrue(report.stinks());
         assertEquals(1, report.getAromas().size());
+        Aroma aroma = report.getAromas().get(0);
+        assertEquals("PrintSniffer", aroma.name());
+        assertEquals(3, aroma.line());
     }
 
     @Test
@@ -59,8 +65,7 @@ public class PrintSnifferTest {
                end note
                @enduml
                """;
-        AromaReport report = new AromaReport(code);
-        codeSniffer.sniff(code, report);
+        AromaReport report = finder.sniff(code);
 
         assertTrue(report.stinks());
         assertEquals(5, report.getAromas().size());
@@ -77,8 +82,7 @@ public class PrintSnifferTest {
                }
                @enduml
                """;
-        AromaReport report = new AromaReport(code);
-        codeSniffer.sniff(code, report);
+        AromaReport report = finder.sniff(code);
 
         assertFalse(report.stinks());
     }
@@ -86,10 +90,8 @@ public class PrintSnifferTest {
     @Test
     public void testSyntaxError() {
         String code = "class Printer { +print() }";
-        AromaReport report = new AromaReport(code);
-
         assertThrows(IllegalArgumentException.class, () -> {
-            codeSniffer.sniff(code, report);
+            finder.sniff(code);
         });
     }
 }

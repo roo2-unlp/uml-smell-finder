@@ -1,17 +1,20 @@
-package oo2.redictado;
+package oo2.redictado.sniffers.anosmic;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import oo2.redictado.AnosmicCodeSniffer.*;
+import oo2.redictado.core.AromaReport;
+import oo2.redictado.core.SmellFinder;
+import oo2.redictado.plantuml.PlantUml;
+import oo2.redictado.plantuml.antlr4.PlantUmlParser.DiagramContext;
 
 public class AnosmicCodeSnifferTest {
-    AnosmicCodeSniffer codeSniffer;
+    SmellFinder<DiagramContext> finder;
 
     @BeforeEach
     public void setUp() {
-        codeSniffer = new AnosmicCodeSniffer();
+        finder = new SmellFinder<>(new PlantUml(), new AnosmicCodeSniffer());
     }
 
     @Test
@@ -23,17 +26,15 @@ public class AnosmicCodeSnifferTest {
                }
                @enduml
                """;
-        AromaReport report = new AromaReport(code);
-        codeSniffer.sniff(code, report);
+        AromaReport report = finder.sniff(code);
         assertFalse(report.stinks());
     }
 
     @Test
     public void testSmellSyntaxError() {
         String code = "class Printer { +print() }";
-        AromaReport report = new AromaReport(code);
         assertThrows(IllegalArgumentException.class, () -> {
-            codeSniffer.sniff(code, report);
+            finder.sniff(code);
         });
     }
 }

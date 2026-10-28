@@ -23,7 +23,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>5.10.0</version>
+      <version>5.13.4</version>
       <scope>test</scope>
     </dependency>
 
@@ -80,22 +80,40 @@
           <groupId>org.antlr</groupId>
           <artifactId>antlr4-maven-plugin</artifactId>
           <version>${antlr4.version}</version>
-          <configuration>
-              <arguments>
-                  <argument>-package</argument>
-                  <argument>oo2.redictado.antlr4</argument>
-              </arguments>
-              <outputDirectory>src/main/java/oo2/redictado/antlr4</outputDirectory>
-          </configuration>
-          <executions>
-              <execution>
-                  <goals>
-                      <goal>antlr4</goal>
-                  </goals>
-              </execution>
-          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>3.5.0</version>
         </plugin>
       </plugins>
     </pluginManagement>
+    <plugins>
+      <!-- Genera el lexer/parser en target/generated-sources/antlr4 en cada build.
+           El paquete sale de la carpeta de la gramática (src/main/antlr4/oo2/redictado/<lenguaje>/antlr4). -->
+      <plugin>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-maven-plugin</artifactId>
+        <configuration>
+          <visitor>${antlr4.visitor}</visitor>
+          <listener>${antlr4.listener}</listener>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- mvn compile exec:java -Dexec.args="diagrama.puml" -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <configuration>
+          <mainClass>oo2.redictado.UmlSmellFinder</mainClass>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 </project>

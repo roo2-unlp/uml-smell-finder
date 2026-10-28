@@ -1,20 +1,14 @@
 # PlantUML
 
-## ¿Qué es PlantUML?
+[PlantUML](https://plantuml.com/es/class-diagram) dibuja diagramas UML a partir de texto. Como los diagramas son texto plano, se pueden versionar con Git y, lo que importa acá, parsear para buscar problemas de diseño. Para ver cómo queda un diagrama, pegalo en el [servidor online](https://www.plantuml.com/plantuml/uml/).
 
-**PlantUML** es una herramienta que permite dibujar diagramas UML escribiéndolos como texto. En lugar de arrastrar cajas y flechas con el mouse, describís el diagrama con una sintaxis simple y PlantUML se encarga de dibujarlo.
+## Qué acepta la gramática
 
-Al ser texto plano, los diagramas se pueden versionar con Git, comparar entre versiones y, lo que nos interesa en este proyecto, **analizar con un parser** para buscar problemas de diseño.
-
-Si querés conocer más, podés visitar el [sitio oficial](https://plantuml.com/es/class-diagram) o probar tus diagramas en el [servidor online](https://www.plantuml.com/plantuml/uml/), que los dibuja a medida que escribís.
-
-## Capacidades de la gramática
-
-En este repositorio hay una gramática de ANTLR4 para PlantUML ([`PlantUmlLexer.g4`](../../src/main/antlr4/PlantUmlLexer.g4) y [`PlantUmlParser.g4`](../../src/main/antlr4/PlantUmlParser.g4)), pero es reducida: solo cubre **diagramas de clases**. A continuación se muestran ejemplos de lo que se puede escribir.
+La gramática del proyecto ([`PlantUmlLexer.g4`](../../src/main/antlr4/oo2/redictado/plantuml/antlr4/PlantUmlLexer.g4) y [`PlantUmlParser.g4`](../../src/main/antlr4/oo2/redictado/plantuml/antlr4/PlantUmlParser.g4)) cubre solo una parte de PlantUML: los diagramas de clases. Todos los ejemplos de esta sección se parsean sin errores.
 
 ### Estructura del diagrama
 
-Todo diagrama empieza con `@startuml` y termina con `@enduml`. Los ejemplos de las secciones siguientes van siempre entre esas dos líneas.
+Todo diagrama empieza con `@startuml` y termina con `@enduml`. En los ejemplos que siguen se omiten esas dos líneas.
 
 ```plantuml
 @startuml MiDiagrama
@@ -26,7 +20,7 @@ class Persona
 
 ### Clases, atributos y métodos
 
-Se aceptan tanto el estilo UML (`nombre : Tipo`) como el estilo Java (`Tipo nombre`).
+Se acepta tanto el estilo UML (`nombre : Tipo`) como el de Java (`Tipo nombre`).
 
 ```plantuml
 class Persona {
@@ -56,8 +50,7 @@ class Contador {
 }
 ```
 
-> [!WARNING]
-> Mirá la sección [Limitaciones conocidas](#limitaciones-conocidas): `#` y `-{static}` necesitan un espacio.
+`#` y `-` necesitan un espacio antes del nombre o del modificador; ver [Limitaciones](#limitaciones).
 
 ### Clases abstractas, interfaces y enumerativos
 
@@ -171,15 +164,16 @@ skinparam classAttributeIconSize 0
 hide empty members
 ```
 
-## Limitaciones conocidas
+## Limitaciones
 
-Estas construcciones son válidas en PlantUML pero esta gramática las interpreta mal:
+Estas construcciones son válidas en PlantUML pero la gramática no las acepta:
 
-- **Visibilidad protegida pegada al nombre**: `#color` se reconoce como un color (como `#LightBlue`), no como `#` + `color`. Escribí `# color` (con espacio).
-- **Modificadores pegados al `-`**: `-{static}` se reconoce como una flecha (`-{`). Escribí `- {static}` (con espacio). Con `+`, `#` y `~` no pasa.
-- **Palabras reservadas como nombres**: no se pueden usar como nombre de clase o atributo palabras como `class`, `note`, `end`, `title`, `left`, `to`, `as`, `of`, etc.
-- Solo se reconocen **diagramas de clases** (no de secuencia, de casos de uso, etc.).
+- `#color`: el lexer lo toma como un color, igual que `#LightBlue`. Escribí `# color`.
+- `-{static}`: el lexer lo toma como el principio de una flecha. Escribí `- {static}`. Con `+`, `#` y `~` no pasa.
+- Multiplicidades en el tipo, como `notas : Integer[*]`. `Integer[]` sí se acepta.
+- Palabras reservadas como nombres de clases o atributos: `class`, `note`, `end`, `title`, `left`, `to`, `as`, `of`, etc.
+- Diagramas que no sean de clases (de secuencia, de casos de uso, etc.).
 
 ## Ejemplos
 
-En la carpeta [`Examples`](./Examples/) hay diagramas completos que la gramática reconoce. El de [`reporte.puml`](./Examples/reporte.puml) tiene el "olor" que detecta el [Print Sniffer](../Print%20Sniffer/Print%20Sniffer.md).
+En [`Examples`](./Examples/) hay diagramas completos que la gramática acepta. [`reporte.puml`](./Examples/reporte.puml) tiene el olor que detecta el [Print Sniffer](../Print%20Sniffer/Print%20Sniffer.md).
