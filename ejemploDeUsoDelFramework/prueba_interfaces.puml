@@ -1,0 +1,18 @@
+@startuml
+interface Repositorio {
+    + guardar()
+}
+
+interface Autenticable
+
+class Logger <<interface>> {
+    + log(msg : String)
+}
+
+class Usuario {
+    - nombre : String
+}
+
+abstract class EntidadBase
+@enduml
+
