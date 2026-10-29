@@ -11,7 +11,7 @@ public class PlainTextFormatter implements ReportFormatter {
         }
         StringBuilder text = new StringBuilder();
         report.getAromas().forEach(aroma -> text.append(
-                "[%s] line %d: %s%n".formatted(aroma.name(), aroma.line(), aroma.message())));
+                "[%s] line %d: %s\n".formatted(aroma.name(), aroma.line(), aroma.message())));
         return text.toString();
     }
 }
