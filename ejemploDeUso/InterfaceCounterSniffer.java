@@ -19,29 +19,4 @@ public class InterfaceCounterSniffer extends PlantUmlSniffer {
         return new InterfaceCounterVisitor();
     }
 
-    /**
-     * Analiza el diagrama en texto plano y retorna el visitor con el conteo de interfaces
-     * y la detección de duplicados.
-     *
-     * @param source código fuente del diagrama en PlantUML
-     * @return instancia de {@link InterfaceCounterVisitor} con los resultados
-     */
-    public InterfaceCounterVisitor count(String source) {
-        InterfaceCounterVisitor visitor = new InterfaceCounterVisitor();
-        PlantUml plantUml = new PlantUml();
-        visitor.visit(plantUml.parse(source));
-        return visitor;
-    }
-
-    /**
-     * Analiza el diagrama desde un archivo en disco.
-     *
-     * @param file ruta al archivo .puml
-     * @return instancia de {@link InterfaceCounterVisitor} con los resultados
-     * @throws IOException si ocurre un error de lectura
-     */
-    public InterfaceCounterVisitor count(Path file) throws IOException {
-        return count(Files.readString(file));
-    }
 }
-
