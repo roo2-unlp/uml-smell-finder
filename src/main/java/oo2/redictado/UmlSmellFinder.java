@@ -11,6 +11,7 @@ import oo2.redictado.core.SmellFinder;
 import oo2.redictado.core.SnifferCatalog;
 import oo2.redictado.plantuml.PlantUml;
 import oo2.redictado.plantuml.antlr4.PlantUmlParser.DiagramContext;
+import oo2.redictado.sniffers.interfacecounter.InterfaceCounterSniffer;
 import oo2.redictado.sniffers.print.PrintSniffer;
 
 /**
@@ -49,6 +50,7 @@ public class UmlSmellFinder {
         SnifferCatalog<DiagramContext> catalog = new SnifferCatalog<>();
         // Add one line per sniffer
         catalog.add("PrintSniffer", params -> new PrintSniffer());
+        catalog.add("InterfaceCounterSniffer", params -> new InterfaceCounterSniffer());
         return catalog;
     }
 }

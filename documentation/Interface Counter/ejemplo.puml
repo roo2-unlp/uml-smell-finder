@@ -1,0 +1,38 @@
+@startuml
+' ==============================================================================
+' Diagrama de prueba para detección de interfaces duplicadas
+' ==============================================================================
+
+' 1. Primera declaración de la interfaz Repositorio (línea 7)
+interface Repositorio {
+    + guardar(entidad : Object) : void
+}
+
+' 2. Interfaz única Autenticable (línea 12)
+interface Autenticable
+
+' 3. Interfaz declarada con estereotipo <<interface>> (línea 15)
+class Notificador <<interface>> {
+    + notificar(mensaje : String) : void
+}
+
+' 4. Interfaz duplicada: Repositorio vuelve a declararse formalmente (línea 20)
+interface Repositorio {
+    + buscarPorId(id : int) : Object
+}
+
+' 5. Interfaz duplicada con estereotipo: Notificador vuelve a declararse (línea 25)
+class Notificador <<interface>> {
+    + cancelar() : void
+}
+
+' Clases normales del dominio
+class Usuario {
+    - nombre : String
+    + getNombre() : String
+}
+
+abstract class EntidadBase
+
+Usuario ..|> Autenticable
+@enduml
