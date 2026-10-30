@@ -1,4 +1,4 @@
-package ar.edu.unlp.info.roo2.interfacecounter;
+package oo2.redictado.sniffers.interfacecounter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,9 +14,8 @@ import oo2.redictado.plantuml.PlantUmlVisitor;
 import oo2.redictado.plantuml.antlr4.PlantUmlParser;
 
 /**
- * Visitor del framework {@code uml-smell-finder} que recorre el árbol sintáctico de un diagrama
- * PlantUML, cuenta las interfaces, detecta si existen interfaces duplicadas y las lista reportando
- * el mal olor correspondiente.
+ * Visitor que recorre el árbol sintáctico de un diagrama PlantUML, cuenta las interfaces,
+ * detecta si existen interfaces duplicadas y reporta el mal olor correspondiente.
  */
 public class InterfaceCounterVisitor extends PlantUmlVisitor {
     private final List<String> allInterfaceNames = new ArrayList<>();
@@ -28,93 +27,67 @@ public class InterfaceCounterVisitor extends PlantUmlVisitor {
     private final Map<String, List<String>> methodsByType = new LinkedHashMap<>();
     private final List<String> detectedSmells = new ArrayList<>();
 
-
-
-    /**
-     * @return la cantidad de interfaces distintas encontradas
-     */
     public int getInterfaceCount() {
         return distinctInterfaceNames.size();
     }
 
-    /**
-     * @return la cantidad total de declaraciones de interfaces encontradas (incluyendo duplicadas)
-     */
     public int getTotalInterfaceCount() {
         return allInterfaceNames.size();
     }
 
-    /**
-     * @return conjunto inmodificable con los nombres de las interfaces encontradas
-     */
     public Set<String> getInterfaces() {
         return Collections.unmodifiableSet(distinctInterfaceNames);
     }
 
-    /**
-     * @return conjunto inmodificable con los nombres de las interfaces encontradas
-     */
     public Set<String> getInterfaceNames() {
         return Collections.unmodifiableSet(distinctInterfaceNames);
     }
 
-    /**
-     * @return lista inmodificable con todas las declaraciones de interfaces en orden de aparición
-     */
     public List<String> getAllInterfaces() {
         return Collections.unmodifiableList(allInterfaceNames);
     }
 
-    /**
-     * @return mapa inmodificable con la frecuencia de aparición de cada nombre de interfaz
-     */
     public Map<String, Integer> getInterfaceCounts() {
         return Collections.unmodifiableMap(interfaceCounts);
     }
 
-
-    /**
-     * @return true si se detectó al menos una interfaz declarada más de una vez
-     */
     public boolean hasDuplicateInterfaces() {
         return !duplicateInterfaces.isEmpty();
     }
 
-    /**
-     * @return true si se detectó al menos una interfaz declarada más de una vez
-     */
     public boolean hasDuplicates() {
         return !duplicateInterfaces.isEmpty();
     }
 
-    /**
-     * @return lista con los nombres de las interfaces que están duplicadas
-     */
     public List<String> getDuplicateInterfaces() {
         return new ArrayList<>(duplicateInterfaces);
     }
 
-    /**
-     * @return conjunto inmodificable con los nombres de las interfaces que están duplicadas
-     */
     public Set<String> getDuplicateInterfaceNames() {
         return Collections.unmodifiableSet(duplicateInterfaces);
     }
 
-    /**
-     * @return cantidad de interfaces duplicadas distintas
-     */
     public int getDuplicateCount() {
         return duplicateInterfaces.size();
     }
 
-    /**
-     * @return lista de descripciones de olores detectados con su número de línea
-     */
     public List<String> getDetectedSmells() {
         return Collections.unmodifiableList(detectedSmells);
     }
 
+    /**
+     * @return string con el reporte de las interfaces duplicadas finalizando con la cantidad de interfaces detectadas
+     */
+    public String getDuplicatesString() {
+        if (!hasDuplicateInterfaces()) {
+            return "";
+        }
+        return String.join("\n", detectedSmells);
+    }
+
+    public String getDuplicateInterfacesString() {
+        return getDuplicatesString();
+    }
 
     public Set<String> getClasses() {
         return Collections.unmodifiableSet(classNames);
@@ -144,7 +117,16 @@ public class InterfaceCounterVisitor extends PlantUmlVisitor {
         return List.copyOf(methodsByType.getOrDefault(typeName, List.of()));
     }
 
-
+    @Override
+    public Void visitDiagram(PlantUmlParser.DiagramContext ctx) {
+        Void result = visitChildren(ctx);
+        if (hasDuplicateInterfaces()) {
+            String countMsg = "Cantidad de interfaces: " + getInterfaceCount();
+            detectedSmells.add(countMsg);
+            smell(countMsg, ctx);
+        }
+        return result;
+    }
 
     @Override
     public Void visitClassDeclaration(PlantUmlParser.ClassDeclarationContext ctx) {
@@ -195,8 +177,6 @@ public class InterfaceCounterVisitor extends PlantUmlVisitor {
             // Permite invocar visit() directamente sin pasar por el SmellCollector del framework
         }
     }
-
-
 
     private void addMethod(String typeName,
                            PlantUmlParser.VisibilityContext vis,
@@ -271,3 +251,4 @@ public class InterfaceCounterVisitor extends PlantUmlVisitor {
         return text;
     }
 }
+

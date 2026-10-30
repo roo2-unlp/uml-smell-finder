@@ -36,4 +36,3 @@ abstract class EntidadBase
 
 Usuario ..|> Autenticable
 @enduml
-

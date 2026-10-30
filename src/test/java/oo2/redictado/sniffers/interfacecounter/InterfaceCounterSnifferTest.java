@@ -1,12 +1,14 @@
-package ar.edu.unlp.info.roo2.interfacecounter;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+package oo2.redictado.sniffers.interfacecounter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Set;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -23,20 +25,19 @@ public class InterfaceCounterSnifferTest {
 
     @BeforeEach
     public void setUp() {
-        // Inicialización a través del framework SmellFinder (Opción B)
         finder = new SmellFinder<>(new PlantUml(), new InterfaceCounterSniffer());
     }
 
     @Test
     public void testDiagramaConInterfacesDuplicadas() throws IOException {
-        Path path = Path.of("documentation/explicacionDelEjemplo/ejemplo.puml");
+        Path path = Path.of("documentation/Interface Counter/ejemplo.puml");
         String code = Files.readString(path);
 
         AromaReport report = finder.sniff(code);
 
-        // Si hay duplicadas, report.stinks() es true
-        assertTrue(report.stinks(), "El reporte debe indicar que el diagrama tiene mal olor");
-        assertEquals(2, report.getAromas().size(), "Debe detectar exactamente 2 interfaces duplicadas");
+        // Olores por duplicados y reporte final de cantidad de interfaces
+        assertTrue(report.stinks());
+        assertEquals(3, report.getAromas().size());
 
         Aroma aroma1 = report.getAromas().get(0);
         assertEquals("InterfaceCounterSniffer", aroma1.name());
@@ -48,10 +49,16 @@ public class InterfaceCounterSnifferTest {
         assertEquals(25, aroma2.line());
         assertEquals("Interface duplicada: Notificador", aroma2.message());
 
-        // Verificamos el formateo de texto plano
+        Aroma aroma3 = report.getAromas().get(2);
+        assertEquals("InterfaceCounterSniffer", aroma3.name());
+        assertEquals(1, aroma3.line());
+        assertEquals("Cantidad de interfaces: 3", aroma3.message());
+
         String formatted = new PlainTextFormatter().format(report);
+        System.out.print(formatted);
         assertTrue(formatted.contains("[InterfaceCounterSniffer] line 20: Interface duplicada: Repositorio"));
         assertTrue(formatted.contains("[InterfaceCounterSniffer] line 25: Interface duplicada: Notificador"));
+        assertTrue(formatted.contains("[InterfaceCounterSniffer] line 1: Cantidad de interfaces: 3"));
     }
 
     @Test
@@ -67,11 +74,11 @@ public class InterfaceCounterSnifferTest {
 
         AromaReport report = finder.sniff(code);
 
-        // Si no hay duplicadas, report.stinks() es false e imprime "The diagram smells good."
-        assertFalse(report.stinks(), "No debe tener olores si las interfaces son únicas");
+        assertFalse(report.stinks());
         assertEquals(0, report.getAromas().size());
 
         String formatted = new PlainTextFormatter().format(report);
+        System.out.print(formatted);
         assertEquals("The diagram smells good.\n", formatted);
     }
 
@@ -88,24 +95,26 @@ public class InterfaceCounterSnifferTest {
         AromaReport report = finder.sniff(code);
 
         assertTrue(report.stinks());
-        assertEquals(2, report.getAromas().size(), "Las apariciones 2 y 3 deben reportarse como duplicadas");
+        assertEquals(3, report.getAromas().size());
+        assertEquals("Interface duplicada: Servicio", report.getAromas().get(0).message());
+        assertEquals("Interface duplicada: Servicio", report.getAromas().get(1).message());
+        assertEquals("Cantidad de interfaces: 1", report.getAromas().get(2).message());
     }
 
-    /**
-     * Ejecución directa para probar la Opción B por consola:
-     */
-    public static void main(String[] args) throws IOException {
-        Path path = Path.of("documentation/explicacionDelEjemplo/ejemplo.puml");
-        if (args.length > 0) {
-            path = Path.of(args[0]);
-        }
+    @Test
+    public void testVisitorDirecto() {
+        InterfaceCounterVisitor visitor = new InterfaceCounterVisitor();
+        PlantUml plantUml = new PlantUml();
+        visitor.visit(plantUml.parse("""
+                @startuml
+                interface A
+                interface B
+                interface C
+                @enduml
+                """));
 
-        SmellFinder<DiagramContext> finder = new SmellFinder<>(new PlantUml(), new InterfaceCounterSniffer());
-        AromaReport report = finder.sniff(Files.readString(path));
-
-        // Si no hay duplicadas, report.stinks() es false e imprime "The diagram smells good."
-        // Si hay duplicadas, imprime cada línea con su olor:
-        System.out.print(new PlainTextFormatter().format(report));
+        assertEquals(3, visitor.getInterfaceCount());
+        assertEquals(Set.of("A", "B", "C"), visitor.getInterfaces());
+        assertFalse(visitor.hasDuplicateInterfaces());
     }
 }
-
