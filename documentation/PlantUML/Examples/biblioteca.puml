@@ -1,0 +1,32 @@
+@startuml Biblioteca
+title Sistema de biblioteca
+
+class Biblioteca {
+    -nombre : String
+    -libros : List<Libro>
+    +agregarLibro(libro : Libro) : void
+    +buscarPorTitulo(titulo : String) : Libro
+}
+
+class Libro {
+    -isbn : String
+    -titulo : String
+    -disponible : Boolean
+    +estaDisponible() : Boolean
+}
+
+class Socio {
+    -numero : Integer
+    -nombre : String
+    +prestar(libro : Libro) : Prestamo
+}
+
+class Prestamo {
+    -fecha : Date
+    +vencido() : Boolean
+}
+
+Biblioteca *--> "*" Libro : - libros
+Socio --> "*" Prestamo : - prestamos
+Prestamo --> "*" Libro : - libros
+@enduml

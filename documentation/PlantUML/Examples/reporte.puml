@@ -1,0 +1,16 @@
+@startuml
+' Este diagrama tiene el olor que detecta el PrintSniffer
+class Alumno {
+    - legajo : String
+    - nombre : String
+    - notas : Integer[]
+    + promedio() : Real
+    + print() : void
+}
+
+class Curso {
+    + print(formato : String) : void
+}
+
+Curso o-- "*" Alumno : - alumnos
+@enduml

@@ -1,0 +1,35 @@
+@startuml
+left to right direction
+skinparam classAttributeIconSize 0
+hide empty members
+
+package banco {
+    class Banco <<Singleton>> {
+        - {static} instancia : Banco
+        +{static} getInstancia() : Banco
+    }
+
+    class Cuenta #LightBlue {
+        -saldo : Real
+        +depositar(monto : Real) : void
+        +extraer(monto : Real) : void
+        --
+        +getSaldo() : Real
+    }
+
+    class CajaDeAhorro
+    class CuentaCorriente
+}
+
+Cuenta : +transferir(destino : Cuenta, monto : Real) : void
+
+Cuenta <|-- CajaDeAhorro
+Cuenta <|-- CuentaCorriente
+Banco o-- "*" Cuenta : - cuentas
+
+note right of Cuenta
+    El saldo nunca puede ser negativo.
+end note
+
+note "Diagrama de ejemplo" as N1
+@enduml
