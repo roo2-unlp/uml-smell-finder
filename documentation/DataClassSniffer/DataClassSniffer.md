@@ -9,9 +9,9 @@ Una clase se considera *Data Class* si expone sus datos y no tiene comportamient
 1. **Es una clase**, abstracta o no. No se analizan interfaces, enumeraciones ni otros tipos (`entity`, `struct`, `exception`, `annotation`, etc.).
 2. **Tiene atributos de instancia.** Los atributos `{static}` no cuentan.
 3. **Expone sus datos:** tiene al menos un accessor que no es privado, o al menos un atributo público (`+`).
-4. **No tiene comportamiento:** todos sus métodos son accessors. Los métodos `{static}` y los constructores no se tienen en cuenta.
+4. **No tiene comportamiento:** todos sus métodos son accessors. Los atributos y métodos `{static}` y los constructores no se tienen en cuenta.
 
-Un *accessor* es un método `getX()` o `isX()` sin parámetros, o `setX(valor)` con un único parámetro. Un *constructor* es un método con el mismo nombre que la clase.
+Un *accessor* es un método `getX()` o `isX()` sin parámetros, o `setX(valor)` con un único parámetro. Después del prefijo tiene que venir una mayúscula, así que `get()`, `getter()`, `issue()` y `setup(valor)` no son accessors. Un *constructor* es un método con el mismo nombre que la clase.
 
 Los miembros se tienen en cuenta tanto si están declarados dentro del cuerpo de la clase como si están declarados afuera (`Clase : +getX()`). Una clase con atributos privados y sin métodos no se reporta, porque no expone sus datos.
 
