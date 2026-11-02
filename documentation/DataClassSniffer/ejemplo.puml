@@ -1,0 +1,50 @@
+@startuml
+title Sistema de alumnos
+
+' Atributos privados, constructor y accessors ✅ 
+class Alumno {
+    -nombre : String
+    -legajo : int
+    +Alumno(nombre : String, legajo : int)
+    +getNombre() : String
+    +getLegajo() : int
+    +setNombre(nombre : String)
+}
+
+'Atributos públicos, sin métodos ✅
+class Direccion {
+    +calle : String
+    +numero : int
+}
+'Tiene comportamiento (inscribir) ❌
+class Curso {
+    -nombre : String
+    -alumnos : List<Alumno>
+    +inscribir(alumno : Alumno) : void
+    +getNombre() : String
+}
+'Atributos privados, sin métodos: no expone ❌
+class Materia {
+    -codigo : String
+}
+
+'Abstracta, con el getter declarado afuera	✅
+abstract class Persona {
+    -dni : int
+}
+
+Persona : +getDni() : int
+
+'Interface	❌
+interface Evaluable {
+    +getNota() : double
+}
+
+'Enum	❌
+enum Turno {
+    MANIANA
+    TARDE
+}
+
+Curso o-- "*" Alumno
+@enduml
