@@ -31,19 +31,27 @@ public class DataClassSnifferTest {
         finder = new SmellFinder<>(new PlantUml(), new DataClassSniffer());
     }
 
-    private static String mensaje(String clase) {
+    private String mensaje(String clase) {
         return clase + " es una Data Class: expone sus datos y no tiene comportamiento.";
     }
 
-    /** Verifica que se reporten exactamente esas clases, en ese orden. */
-    private void assertDataClasses(String code, String... clases) {
-        assertEquals(Stream.of(clases).map(DataClassSnifferTest::mensaje).toList(),
-                finder.sniff(code).getAromas().stream().map(Aroma::message).toList());
+    private void assertDataClasses(String codePlantUML, String... clases) {
+        List<String> loQueEspero = Stream.of(clases)
+                .map(clase -> this.mensaje(clase))
+                .toList();
+
+        List<String> loQueEncuentro = finder.sniff(codePlantUML)
+                .getAromas()
+                .stream()
+                .map(aroma -> aroma.message())
+                .toList();
+
+        assertEquals(loQueEspero, loQueEncuentro);
     }
 
     @Test
     public void testEsUnaClase() {
-        assertDataClasses("""
+        String codePlantUML = """
                 @startuml
                 class Concreta {
                     +dato : int
@@ -70,12 +78,14 @@ public class DataClassSnifferTest {
                     +dato : int
                 }
                 @enduml
-                """, "Concreta", "Abstracta");
+                """;
+
+        assertDataClasses(codePlantUML, "Concreta", "Abstracta");
     }
 
     @Test
     public void testTieneAtributosDeInstancia() {
-        assertDataClasses("""
+        String codePlantUML = """
                 @startuml
                 class ConAtributoDeInstancia {
                     -dato : int
@@ -89,12 +99,14 @@ public class DataClassSnifferTest {
                     +getDato() : int
                 }
                 @enduml
-                """, "ConAtributoDeInstancia");
+                """;
+
+        assertDataClasses(codePlantUML, "ConAtributoDeInstancia");
     }
 
     @Test
     public void testExponeSusDatos() {
-        assertDataClasses("""
+        String codePlantUML = """
                 @startuml
                 class AccessorPublico {
                     -dato : int
@@ -128,14 +140,24 @@ public class DataClassSnifferTest {
                 class AtributoSinVisibilidad {
                     dato : int
                 }
+                class ConAtributoPublicoStatic {
+                    +{static} version : String
+                    -dato : int
+                }
+                class GetterStatic {
+                    -dato : int
+                    +{static} getDato() : int
+                }
                 @enduml
-                """, "AccessorPublico", "AccessorProtegido", "AccessorDePaquete", "AccessorSinVisibilidad",
-                "AtributoPublico");
+                """;
+
+        assertDataClasses(codePlantUML, "AccessorPublico", "AccessorProtegido", "AccessorDePaquete",
+                "AccessorSinVisibilidad", "AtributoPublico");
     }
 
     @Test
     public void testNoTieneComportamiento() {
-        assertDataClasses("""
+        String codePlantUML = """
                 @startuml
                 class SoloAccessors {
                     -dato : int
@@ -151,17 +173,15 @@ public class DataClassSnifferTest {
                     +getDato() : int
                     +calcular()
                 }
-                class ConAtributoPublicoStatic {
-                    +{static} version : String
-                    -dato : int
-                }
                 @enduml
-                """, "SoloAccessors", "ConMetodoStatic");
+                """;
+
+        assertDataClasses(codePlantUML, "SoloAccessors", "ConMetodoStatic");
     }
 
     @Test
     public void testDefinicionDeAccessor() {
-        assertDataClasses("""
+        String codePlantUML = """
                 @startuml
                 class Getter {
                     -dato : int
@@ -198,12 +218,14 @@ public class DataClassSnifferTest {
                     +setup(dato : int)
                 }
                 @enduml
-                """, "Getter", "GetterBooleano", "Setter");
+                """;
+
+        assertDataClasses(codePlantUML, "Getter", "GetterBooleano", "Setter");
     }
 
     @Test
     public void testDefinicionDeConstructor() {
-        assertDataClasses("""
+        String codePlantUML = """
                 @startuml
                 class ConConstructor {
                     +dato : int
@@ -218,12 +240,14 @@ public class DataClassSnifferTest {
                     +SoloConstructorNoExpone(dato : int)
                 }
                 @enduml
-                """, "ConConstructor");
+                """;
+
+        assertDataClasses(codePlantUML, "ConConstructor");
     }
 
     @Test
     public void testMiembrosDentroYAfueraDelCuerpo() {
-        assertDataClasses("""
+        String codePlantUML = """
                 @startuml
                 class AccessorAfuera {
                     -dato : int
@@ -236,23 +260,27 @@ public class DataClassSnifferTest {
                 }
                 ComportamientoAfuera : +calcular()
                 @enduml
-                """, "AccessorAfuera", "AtributoAfuera");
+                """;
+
+        assertDataClasses(codePlantUML, "AccessorAfuera", "AtributoAfuera");
     }
 
     @Test
     public void testAtributosPrivadosSinMetodosNoSeReporta() {
-        assertDataClasses("""
+        String codePlantUML = """
                 @startuml
                 class Materia {
                     -codigo : String
                 }
                 @enduml
-                """);
+                """;
+
+        assertDataClasses(codePlantUML);
     }
 
     @Test
     public void testUnAromaPorCadaDataClassConLaLineaDeLaClase() {
-        AromaReport report = finder.sniff("""
+        String codePlantUML = """
                 @startuml
                 class Alumno {
                     -dato : int
@@ -263,38 +291,48 @@ public class DataClassSnifferTest {
                     +calle : String
                 }
                 @enduml
-                """);
+                """;
 
-        assertEquals(List.of(
-                new Aroma("DataClassSniffer", mensaje("Alumno"), 2),
-                new Aroma("DataClassSniffer", mensaje("Direccion"), 7)), report.getAromas());
+        List<Aroma> loQueEspero = List.of(
+                new Aroma("DataClassSniffer", this.mensaje("Alumno"), 2),
+                new Aroma("DataClassSniffer", this.mensaje("Direccion"), 7));
+
+        List<Aroma> loQueEncuentro = finder.sniff(codePlantUML).getAromas();
+
+        assertEquals(loQueEspero, loQueEncuentro);
     }
 
     @Test
     public void testSinDataClassesHueleBien() {
-        AromaReport report = finder.sniff("""
+        String codePlantUML = """
                 @startuml
                 class Curso {
                     -nombre : String
                     +cerrar()
                 }
                 @enduml
-                """);
+                """;
+
+        AromaReport report = finder.sniff(codePlantUML);
 
         assertEquals("The diagram smells good.\n", new PlainTextFormatter().format(report));
     }
 
     @Test
     public void testEjemploDeLaDocumentacion() throws IOException {
-        String code = Files.readString(Path.of("documentation/DataClassSniffer/ejemplo.puml"));
+        String codePlantUML = Files.readString(Path.of("documentation/DataClassSniffer/ejemplo.puml"));
 
-        AromaReport report = new SmellFinder<>(new PlantUml(), UmlSmellFinder.catalog().sniffers("DataClassSniffer"))
-                .sniff(code);
+        SmellFinder<DiagramContext> finderDelCatalogo = new SmellFinder<>(new PlantUml(),
+                UmlSmellFinder.catalog().sniffers("DataClassSniffer"));
 
-        assertEquals("""
+        String loQueEspero = """
                 [DataClassSniffer] line 5: Alumno es una Data Class: expone sus datos y no tiene comportamiento.
                 [DataClassSniffer] line 15: Direccion es una Data Class: expone sus datos y no tiene comportamiento.
                 [DataClassSniffer] line 32: Persona es una Data Class: expone sus datos y no tiene comportamiento.
-                """, new PlainTextFormatter().format(report));
+                """;
+
+        String loQueEncuentro = new PlainTextFormatter().format(finderDelCatalogo.sniff(codePlantUML));
+
+        assertEquals(loQueEspero, loQueEncuentro);
     }
 }
