@@ -1,0 +1,40 @@
+@startuml Tienda
+title Tienda online
+
+class Cliente {
+    -nombre : String
+    -email : String
+}
+
+class Pedido {
+    -fecha : Date
+    +total() : Double
+}
+
+class Factura {
+    -numero : Integer
+    -cliente : Cliente
+}
+
+class Carrito {
+    +asignar(cliente : Cliente) : void
+}
+
+class Envio {
+    -direccion : String
+}
+
+abstract class Producto {
+    -precio : Double
+}
+
+class Libro
+class Disco
+
+Pedido --> Cliente
+Envio ..> Cliente
+Pedido o-- Producto
+Carrito o-- Producto
+Producto <|-- Libro
+Producto <|-- Disco
+@enduml
