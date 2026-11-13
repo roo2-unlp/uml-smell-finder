@@ -1,0 +1,3 @@
+### Detectar variables sin visibilidad explícita:
+
+Una variable sin visibilidad es un elemento de una clase concreta, abstracta o de una interfaz cuya visibilidad no es representada con ningún símbolo anterior al nombre de la variable y no posee paréntesis: ‘variable’ es una variable sin visibilidad explícita siempre que no posea símbolos inmediatamente anterior a la definición y se encuentre definida dentro de una clase: class prueba{ variable} o por fuera haciendo referencia a la misma: ‘prueba : variable’.  
