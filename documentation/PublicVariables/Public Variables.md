@@ -1,0 +1,3 @@
+### Detectar variables públicas:
+
+Una variable pública es un elemento de una clase concreta, abstracta o de una interfaz cuya visibilidad se representa con el símbolo ‘+’ anterior al nombre de la variable y no posee paréntesis: ‘+ variable’ es una variable pública siempre que se encuentre definida dentro de una clase (o clase abstracta o interfaz): class prueba{ \+ variable } o por fuera haciendo referencia a la misma: ‘prueba: \+ variable’.  
