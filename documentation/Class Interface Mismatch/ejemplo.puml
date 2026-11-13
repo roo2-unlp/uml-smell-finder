@@ -1,0 +1,58 @@
+@startuml
+' Diagrama de ejemplo para detección de Class/Interface Mismatch
+
+' Interfaz declarada mediante el estereotipo elegido.
+class Repositorio <<interface>> {
+    + buscar(id : String) : Entidad
+    + guardar(entidad : Entidad) : void
+}
+
+' Cumple el contrato de Repositorio.
+class RepositorioCompleto {
+    + buscar(id : String) : Entidad
+    + guardar(entidad : Entidad) : void
+}
+
+' No cumple el contrato: falta la operación buscar.
+class RepositorioIncompleto {
+    + guardar(entidad : Entidad) : void
+}
+
+' Tiene el nombre buscar, pero la firma no coincide con la interfaz.
+class RepositorioConFirmaIncompatible {
+    + buscar(id : Integer) : Entidad
+    + guardar(entidad : Entidad) : void
+}
+
+' La firma coincide, pero la visibilidad es más restrictiva.
+class RepositorioConVisibilidadReducida {
+    - buscar(id : String) : Entidad
+    + guardar(entidad : Entidad) : void
+}
+
+' La operación de instancia de la interfaz se declara estática.
+class RepositorioConOperacionEstatica {
+    {static} + buscar(id : String) : Entidad
+    + guardar(entidad : Entidad) : void
+}
+
+' La clase es concreta, pero deja abstracta una operación requerida.
+class RepositorioConOperacionAbstracta {
+    {abstract} + buscar(id : String) : Entidad
+    + guardar(entidad : Entidad) : void
+}
+
+' El nombre y los parámetros coinciden, pero el tipo de retorno no.
+class RepositorioConRetornoIncompatible {
+    + buscar(id : String) : String
+    + guardar(entidad : Entidad) : void
+}
+
+Repositorio <|.. RepositorioCompleto
+Repositorio <|.. RepositorioIncompleto
+Repositorio <|.. RepositorioConFirmaIncompatible
+Repositorio <|.. RepositorioConVisibilidadReducida
+Repositorio <|.. RepositorioConOperacionEstatica
+Repositorio <|.. RepositorioConOperacionAbstracta
+Repositorio <|.. RepositorioConRetornoIncompatible
+@enduml
