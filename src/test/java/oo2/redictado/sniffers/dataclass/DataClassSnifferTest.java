@@ -284,15 +284,16 @@ public class DataClassSnifferTest {
                 Alumno : +getDato() : int
 
                 class Direccion {
-                    +calle : String
+                    -calle : String
                 }
+                class Profesor{ -nombre:String}    
                 @enduml
                 """;
 
         List<Aroma> loQueEspero = List.of(
                 new Aroma("DataClassSniffer", this.mensaje("Alumno"), 2),
-                new Aroma("DataClassSniffer", this.mensaje("Direccion"), 7));
-
+                new Aroma("DataClassSniffer", this.mensaje("Direccion"), 7),
+                new Aroma("DataClassSniffer", this.mensaje("Profesor"), 10));
         List<Aroma> loQueEncuentro = finder.sniff(codePlantUML).getAromas();
 
         assertEquals(loQueEspero, loQueEncuentro);
