@@ -20,7 +20,7 @@ Agrega un aroma por cada *Data Class*, con la línea donde está declarada la cl
 [`ejemplo.puml`](./ejemplo.puml) tiene tres *Data Classes*: `Alumno`, que expone sus datos con accessors; `Direccion`, que tiene atributos públicos; y `Persona`, una clase abstracta con su getter declarado fuera del cuerpo. `Curso` no se reporta porque tiene comportamiento, y `Materia` tampoco, porque no expone sus datos:
 
 ```bash
-mvn -q compile exec:java -Dexec.args="--sniffers DataClassSniffer \"documentation/DataClassSniffer/ejemplo.puml\""
+mvn -q compile exec:java -Dexec.args="--sniffers DataClassSniffer \"documentation/Data Class Sniffer/ejemplo.puml\""
 ```
 
 ```text

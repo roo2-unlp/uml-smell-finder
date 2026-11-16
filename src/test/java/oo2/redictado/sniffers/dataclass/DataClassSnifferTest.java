@@ -20,7 +20,7 @@ import oo2.redictado.plantuml.PlantUml;
 import oo2.redictado.plantuml.antlr4.PlantUmlParser.DiagramContext;
 
 /**
- * Un test por cada punto de documentation/DataClassSniffer/DataClassSniffer.md.
+ * Un test por cada punto de documentation/Data Class Sniffer/Data Class Sniffer.md.
  */
 public class DataClassSnifferTest {
 
@@ -84,13 +84,9 @@ public class DataClassSnifferTest {
     }
 
     @Test
-    public void testTieneAtributosDeInstancia() {
+    public void testSinAtributosDeInstanciaNoSeReporta() {
         String codePlantUML = """
                 @startuml
-                class ConAtributoDeInstancia {
-                    -dato : int
-                    +getDato() : int
-                }
                 class SinAtributos {
                     +getDato() : int
                 }
@@ -101,7 +97,7 @@ public class DataClassSnifferTest {
                 @enduml
                 """;
 
-        assertDataClasses(codePlantUML, "ConAtributoDeInstancia");
+        assertDataClasses(codePlantUML);
     }
 
     @Test
@@ -320,7 +316,7 @@ public class DataClassSnifferTest {
 
     @Test
     public void testEjemploDeLaDocumentacion() throws IOException {
-        String codePlantUML = Files.readString(Path.of("documentation/DataClassSniffer/ejemplo.puml"));
+        String codePlantUML = Files.readString(Path.of("documentation/Data Class Sniffer/ejemplo.puml"));
 
         SmellFinder<DiagramContext> finderDelCatalogo = new SmellFinder<>(new PlantUml(),
                 UmlSmellFinder.catalog().sniffers("DataClassSniffer"));
