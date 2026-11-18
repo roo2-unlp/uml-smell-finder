@@ -2,6 +2,7 @@ package oo2.redictado.sniffers.hubclass;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -426,6 +427,17 @@ public class HubClassSnifferTest {
                 A ..> H
                 @enduml
                 """);
+    }
+
+    @Test
+    public void test22ErrorDeTipeoEnElDiagrama() {
+        String code = """
+                @startuml
+                clas H
+                @enduml
+                """;
+
+        assertThrows(IllegalArgumentException.class, () -> finder.sniff(code));
     }
 
     private void assertHubDetected(String code, int knownBy) {
