@@ -1,8 +1,10 @@
 package oo2.redictado;
 
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
 
 import oo2.redictado.core.CodeSniffer;
 import oo2.redictado.core.PlainTextFormatter;
@@ -13,11 +15,14 @@ import oo2.redictado.plantuml.PlantUml;
 import oo2.redictado.plantuml.antlr4.PlantUmlParser.DiagramContext;
 import oo2.redictado.sniffers.interfacecounter.InterfaceCounterSniffer;
 import oo2.redictado.sniffers.print.PrintSniffer;
+import oo2.redictado.sniffers.unimplementedAbstractMethod.UnimplementedAbstractMethodSniffer;
+
 
 /**
  * Runs the sniffers over a PlantUML file and prints the report.
  */
 public class UmlSmellFinder {
+
 
     public static void main(String[] args) throws IOException {
         CodeSniffer<DiagramContext> sniffer;
@@ -43,6 +48,7 @@ public class UmlSmellFinder {
         System.out.print(formatter.format(finder.sniff(code)));
     }
 
+
     /**
      * @return every sniffer of the project
      */
@@ -51,6 +57,10 @@ public class UmlSmellFinder {
         // Add one line per sniffer
         catalog.add("PrintSniffer", params -> new PrintSniffer());
         catalog.add("InterfaceCounterSniffer", params -> new InterfaceCounterSniffer());
+        catalog.add("UnimplementedAbstractMethodSniffer", params -> new UnimplementedAbstractMethodSniffer());
         return catalog;
     }
 }
+
+
+
