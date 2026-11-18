@@ -18,7 +18,7 @@ No se tienen en cuenta:
 Para decidir si `H` es Hub se cuentan las clases distintas que la conocen, no cuántas veces la nombran. Ese número se compara con las otras clases del diagrama, sin contar a `H`:
 
 - La tiene que conocer al menos la mitad de las otras clases. Si la mitad no da justa, se redondea para arriba.
-- Nunca alcanza con menos de 3, aunque el diagrama sea chico.
+- Nunca alcanza con menos de 3, aunque el diagrama sea chico. Que a una clase la conozcan una o dos clases es normal en cualquier diseño, por ejemplo una clase que comparten otras dos, y eso no es que la conozcan muchas. Con 3 deja de estar compartida entre un par y empieza a juntar dependencias. Sin este mínimo, en un diagrama de 4 clases alcanzaría con que la conozcan 2 para marcarla como Hub.
 
 | Clases del diagrama | Otras clases | Mitad | Tienen que conocerla |
 |---------------------|--------------|-------|----------------------|
@@ -28,6 +28,8 @@ Para decidir si `H` es Hub se cuentan las clases distintas que la conocen, no cu
 | 21                  | 20           | 10    | 10                   |
 
 Con `N` como la cantidad total de clases del diagrama, la cuenta es `max(3, ceil((N - 1) / 2))`.
+
+El mínimo de 3 solo cambia el resultado en diagramas de 5 clases o menos, porque desde 6 clases la mitad ya da 3 o más. Tampoco lo pusimos más alto, porque con un mínimo de 5, por ejemplo, en un diagrama de 5 clases no se podría detectar una Hub Class aunque la conozcan todas las demás.
 
 Agrega un aroma por cada Hub Class, con la línea donde está declarada la clase. No reporta olores si ninguna clase llega a la cantidad necesaria.
 
