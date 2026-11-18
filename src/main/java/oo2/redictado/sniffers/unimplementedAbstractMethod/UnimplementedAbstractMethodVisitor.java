@@ -15,7 +15,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import oo2.redictado.plantuml.PlantUmlVisitor;
 import oo2.redictado.plantuml.antlr4.PlantUmlParser;
 
-public class UnimplementedAbtractMethodVisitor extends PlantUmlVisitor {
+public class UnimplementedAbstractMethodVisitor extends PlantUmlVisitor {
     // clases abstractas que evaden obligaciones
     private final Set<String> clasesAbstractas = new HashSet<>();
     
