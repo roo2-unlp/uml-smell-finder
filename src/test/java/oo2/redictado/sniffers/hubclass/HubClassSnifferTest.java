@@ -430,7 +430,40 @@ public class HubClassSnifferTest {
     }
 
     @Test
-    public void test22ErrorDeTipeoEnElDiagrama() {
+    public void test22DetectaVariasHubClassesEnElMismoDiagrama() {
+        String code = """
+                @startuml
+                class H1
+                class H2
+                class A
+                class B
+                class C
+                class D
+                class E
+                class F
+                A --> H1
+                B --> H1
+                C --> H1
+                D --> H1
+                C --> H2
+                D --> H2
+                E --> H2
+                F --> H2
+                @enduml
+                """;
+
+        AromaReport report = finder.sniff(code);
+
+        assertTrue(report.stinks());
+        assertEquals(2, report.getAromas().size());
+        assertEquals("H1 es una Hub Class: la conocen 4 clases.", report.getAromas().get(0).message());
+        assertEquals(2, report.getAromas().get(0).line());
+        assertEquals("H2 es una Hub Class: la conocen 4 clases.", report.getAromas().get(1).message());
+        assertEquals(3, report.getAromas().get(1).line());
+    }
+
+    @Test
+    public void test23ErrorDeTipeoEnElDiagrama() {
         String code = """
                 @startuml
                 clas H
