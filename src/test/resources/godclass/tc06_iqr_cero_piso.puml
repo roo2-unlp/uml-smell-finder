@@ -1,0 +1,40 @@
+@startuml
+class Boletin {
+    -periodo : String
+    -observaciones : String
+    -promedio : Real
+    +calcular() : void
+    +imprimir() : void
+    +firmar() : void
+}
+class Alumno {
+    -nombre : String
+    -legajo : Integer
+    +inscribirse(c : Curso) : void
+    +rendirExamen(e : Examen) : void
+}
+class Profesor {
+    -nombre : String
+    -titulo : String
+    +dictarClase(c : Curso) : void
+    +corregirExamen(e : Examen) : void
+}
+class Curso {
+    -nombre : String
+    -cupo : Integer
+    +abrirInscripcion() : void
+    +cerrarInscripcion() : void
+}
+class Aula {
+    -numero : Integer
+    -capacidad : Integer
+    +reservar() : void
+    +liberar() : void
+}
+
+Alumno *-- "*" Boletin
+Alumno --> "*" Curso : cursa
+Profesor --> "*" Curso : dicta
+Profesor ..> Boletin : firma
+Curso --> "1" Aula : usa
+@enduml

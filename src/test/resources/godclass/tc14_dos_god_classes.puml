@@ -1,0 +1,89 @@
+@startuml
+class Escuela {
+    -nombre : String
+    -direccion : String
+    -cuit : String
+    -director : String
+    -matricula : Integer
+    -ciclo : Integer
+    -presupuesto : Real
+    +inscribirAlumno(a : Alumno) : void
+    +asignarAula(a : Aula) : void
+    +contratarProfesor(p : Profesor) : void
+    +generarBoletin(a : Alumno) : void
+    +programarExamen(e : Examen) : void
+    +calcularPromedio(a : Alumno) : Real
+    +liquidarSueldos() : void
+    +publicarCalendario() : void
+    +registrarAsistencia(a : Alumno) : void
+}
+class Secretaria {
+    -agenda : String
+    -archivo : String
+    -sello : String
+    -libroActas : String
+    -turnos : String
+    -casilleros : Integer
+    -sistema : String
+    -clave : String
+    +emitirConstancia() : void
+    +archivarLegajo() : void
+    +recibirPago() : void
+    +citarFamilia() : void
+    +coordinarExamenes() : void
+    +gestionarBecas() : void
+    +actualizarPadron() : void
+    +atenderConsultas() : void
+    +certificarFirmas() : void
+    +cerrarLibro() : void
+}
+class Alumno {
+    -nombre : String
+    -legajo : Integer
+    +inscribirse(c : Curso) : void
+    +rendirExamen(e : Examen) : void
+}
+class Profesor {
+    -nombre : String
+    -titulo : String
+    +dictarClase(c : Curso) : void
+    +corregirExamen(e : Examen) : void
+}
+class Curso {
+    -nombre : String
+    -cupo : Integer
+    +abrirInscripcion() : void
+    +cerrarInscripcion() : void
+}
+class Aula {
+    -numero : Integer
+    -capacidad : Integer
+    +reservar() : void
+    +liberar() : void
+}
+class Examen {
+    -fecha : Date
+    -temario : String
+    +programar() : void
+    +publicarNotas() : void
+}
+class Boletin {
+    -periodo : String
+    -promedio : Real
+    +calcular() : void
+    +imprimir() : void
+}
+
+Escuela *-- "1" Secretaria
+Escuela *-- "*" Curso
+Escuela *-- "*" Aula
+Escuela o-- "*" Profesor
+Escuela o-- "*" Alumno
+Secretaria ..> "*" Alumno : gestiona legajo
+Secretaria ..> "*" Boletin : emite
+Secretaria ..> "*" Examen : coordina
+Profesor --> "*" Curso : dicta
+Profesor ..> "*" Examen : corrige
+Alumno --> "*" Curso : cursa
+Curso --> "1" Aula : usa
+@enduml

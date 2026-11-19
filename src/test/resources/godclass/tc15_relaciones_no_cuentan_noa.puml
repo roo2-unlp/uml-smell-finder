@@ -1,0 +1,49 @@
+@startuml
+class Escuela {
+    -nombre : String
+    -direccion : String
+    -cuit : String
+    -director : String
+    -matricula : Integer
+    +inscribirAlumno(a : Alumno) : void
+    +asignarAula(a : Aula) : void
+    +contratarProfesor(p : Profesor) : void
+    +generarBoletin(a : Alumno) : void
+    +programarExamen(e : Examen) : void
+    +calcularPromedio(a : Alumno) : Real
+    +liquidarSueldos() : void
+    +publicarCalendario() : void
+}
+class Alumno {
+    -nombre : String
+    -legajo : Integer
+    +inscribirse(c : Curso) : void
+    +rendirExamen(e : Examen) : void
+}
+class Profesor {
+    -nombre : String
+    -titulo : String
+    +dictarClase(c : Curso) : void
+    +corregirExamen(e : Examen) : void
+}
+class Curso {
+    -nombre : String
+    -cupo : Integer
+    +abrirInscripcion() : void
+    +cerrarInscripcion() : void
+}
+class Aula {
+    -numero : Integer
+    -capacidad : Integer
+    +reservar() : void
+    +liberar() : void
+}
+
+Escuela *-- "*" Curso : -cursos
+Escuela *-- "*" Aula : -aulas
+Escuela o-- "*" Profesor : -profesores
+Escuela o-- "*" Alumno : -alumnos
+Profesor --> "*" Curso : dicta
+Alumno --> "*" Curso : cursa
+Curso --> "1" Aula : -aulaAsignada
+@enduml

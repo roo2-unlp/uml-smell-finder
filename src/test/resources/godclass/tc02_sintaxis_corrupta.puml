@@ -1,0 +1,6 @@
+@startuml
+class Alumno {
+    -nombre : String
+    +inscribirse(c : Curso) : void
+class Curso
+@enduml

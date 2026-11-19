@@ -1,0 +1,124 @@
+@startuml
+class Escuela {
+    -nombre : String
+    -direccion : String
+    -cuit : String
+    -director : String
+    -matricula : Integer
+    -ciclo : Integer
+    -presupuesto : Real
+    -turno : String
+    -telefono : String
+    -email : String
+    -horarioApertura : String
+    -cantidadAulas : Integer
+    -nivel : String
+    +inscribirAlumno(a : Alumno) : void
+    +asignarAula(a : Aula) : void
+    +contratarProfesor(p : Profesor) : void
+    +generarBoletin(a : Alumno) : void
+    +programarExamen(e : Examen) : void
+    +calcularPromedio(a : Alumno) : Real
+    +liquidarSueldos() : void
+    +publicarCalendario() : void
+    +registrarAsistencia(a : Alumno) : void
+    +emitirCertificado(a : Alumno) : void
+    +cobrarCuota(a : Alumno) : void
+    +auditarLegajos() : void
+    +abrirCiclo() : void
+    +cerrarCiclo() : void
+    +asignarBeca(a : Alumno) : void
+    +notificarFamilias() : void
+}
+class Profesor {
+    -nombre : String
+    -titulo : String
+    -legajo : Integer
+    -dni : String
+    -especialidad : String
+    -antiguedad : Integer
+    -horasSemanales : Integer
+    +dictarClase(c : Curso) : void
+    +corregirExamen(e : Examen) : void
+    +planificar() : void
+    +evaluar() : void
+    +asistir() : void
+    +tutorear() : void
+    +capacitarse() : void
+    +reemplazar() : void
+    +informar() : void
+}
+class Curso {
+    -nombre : String
+    -cupo : Integer
+    -anio : Integer
+    -turno : String
+    -programa : String
+    -cargaHoraria : Integer
+    +abrirInscripcion() : void
+    +cerrarInscripcion() : void
+    +asignarProfesor() : void
+    +cerrarActa() : void
+    +actualizarPrograma() : void
+    +validarCorrelativas() : void
+    +publicarHorario() : void
+    +archivar() : void
+}
+class Alumno {
+    -nombre : String
+    -legajo : Integer
+    -dni : String
+    -email : String
+    +inscribirse(c : Curso) : void
+    +rendirExamen(e : Examen) : void
+    +justificarFalta() : void
+    +solicitarConstancia() : void
+    +cambiarCurso() : void
+}
+class Aula {
+    -numero : Integer
+    -capacidad : Integer
+    -piso : Integer
+    +reservar() : void
+    +liberar() : void
+    +equipar() : void
+    +limpiar() : void
+}
+class Examen {
+    -fecha : Date
+    -temario : String
+    +programar() : void
+    +publicarNotas() : void
+    +anular() : void
+}
+class Boletin {
+    -periodo : String
+    -promedio : Real
+    +calcular() : void
+    +imprimir() : void
+    +firmar() : void
+}
+class Materia {
+    -nombre : String
+    +dictar() : void
+    +evaluar() : void
+}
+class Horario {
+    -franja : String
+    +asignar() : void
+}
+
+Escuela *-- "*" Curso
+Escuela *-- "*" Aula
+Escuela o-- "*" Profesor
+Escuela o-- "*" Alumno
+Curso *-- "*" Materia
+Curso *-- "1" Horario
+Curso --> "1" Aula : usa
+Profesor --> "*" Curso : dicta
+Profesor ..> "*" Examen : corrige
+Alumno --> "*" Curso : cursa
+Alumno *-- "*" Boletin
+Examen --> "1" Materia : evalua
+Boletin ..> "*" Examen : resume
+@enduml

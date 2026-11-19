@@ -18,7 +18,8 @@ Detecta **clases que concentran una cantidad anormal de comportamiento y estado 
    - 5.3 [El umbral híbrido: cerca de Tukey con piso absoluto](#53-el-umbral-híbrido-cerca-de-tukey-con-piso-absoluto)
    - 5.4 [Tamaño mínimo por defecto del diagrama](#54-tamaño-mínimo-por-defecto-del-diagrama)
 6. [Regla de decisión](#6-regla-de-decisión)
-7. [Referencias](#13-referencias)
+7. [Casos de prueba](#7-casos-de-prueba)
+8. [Referencias](#8-referencias)
 
 ---
 
@@ -184,11 +185,162 @@ Una clase analizable $c$ se reporta como sospechosa si y solo si supera **estric
 
 $$\text{NOM}(c) > U_{\text{NOM}} \quad \land \quad \text{NOA}(c) > U_{\text{NOA}}$$
 
+---
 
-----
+## 7. Casos de prueba
+
+Cada caso es un diagrama PlantUML del dominio de un **Sistema de Gestión Escolar**, guardado en [`src/test/resources/godclass/`](../../src/test/resources/godclass/). Convenciones:
+- **Clases base:** 4 clases con 2 métodos y 2 atributos (`Alumno`, `Profesor`, `Curso`, `Aula`).
+- Las imágenes van en `imagenes/` (junto a este documento), con el mismo nombre que el `.puml`.
+
+### Resumen
+
+| ID | Nombre | Qué testea | Resultado esperado |
+|---|---|---|---|
+| TC-01 | Diagrama vacío | Sin clases no hay aromas ni errores | Sin aromas |
+| TC-02 | Sintaxis corrupta | Un error de sintaxis se informa y no genera aromas parciales | `IllegalArgumentException("Syntax error")` |
+| TC-03 | Clase vacía | Una clase sin miembros no rompe el cálculo | Sin aromas |
+| TC-04 | N<5 con clase grande | Con `n < 5` no se emite ningún aroma, aunque haya una clase enorme | Sin aromas |
+| TC-05 | N<5 por tipos excluidos | `interface`, `enum` y `<<interface>>` no cuentan para `n` | Sin aromas |
+| TC-06 | IQR = 0 y piso | Con clases de 2 métodos y una de 3, el piso evita el falso positivo | Sin aromas |
+| TC-07 | Data Class | Constructor, getters, `is` y setters no cuentan en NOM | Sin aromas |
+| TC-08 | Solo NOM supera | Se exigen ambas métricas, no solo NOM | Sin aromas |
+| TC-09 | Solo NOA supera | Se exigen ambas métricas, no solo NOA | Sin aromas |
+| TC-10 | Piso estricto | NOM = 7 y NOA = 5 (justo en el piso) no se reportan: la regla usa `>` | Sin aromas |
+| TC-11 | Cerca de Tukey exacta | Una clase igual a la cerca, aunque supere los pisos, no se reporta | Sin aromas |
+| TC-12 | Única God Class con N=5 | Con `n = 5` ya se analiza y se reporta la clase grande | 1 aroma: `Escuela` |
+| TC-13 | Varias grandes, una superior | Solo se reporta la que supera la cerca; las otras, aunque pasen los pisos, se ignoran | 1 aroma: `Escuela` |
+| TC-14 | Dos God Classes | Si hay dos clases anómalas se reportan ambas | 2 aromas: `Escuela`, `Secretaria` |
+| TC-15 | Relaciones no cuentan como NOA | Las asociaciones/composiciones etiquetadas no inflan NOA | Sin aromas |
+
+### 7.1 Casos borde
+
+#### TC-01: Diagrama vacío
+**Qué testea:** que un diagrama sin clases no produzca aromas ni errores.
+**Valores clave:** `n = 0`.
+**Resultado esperado:** sin aromas.
+**Archivo:** [`tc01_vacio.puml`](../../src/test/resources/godclass/tc01_vacio.puml)
 
 
-# 7. Referencias
+#### TC-02: Sintaxis corrupta
+**Qué testea:** que un diagrama con sintaxis inválida (llave sin cerrar) se informe como error y no genere aromas parciales.
+**Valores clave:** no aplica.
+**Resultado esperado:** `IllegalArgumentException("Syntax error")`.
+**Archivo:** [`tc02_sintaxis_corrupta.puml`](../../src/test/resources/godclass/tc02_sintaxis_corrupta.puml)
+
+
+
+#### TC-03: Clase vacía
+**Qué testea:** que una clase sin atributos ni métodos no rompa el cálculo de métricas.
+**Valores clave:** `n = 1`, `NOM = 0`, `NOA = 0`.
+**Resultado esperado:** sin aromas.
+**Archivo:** [`tc03_clase_vacia.puml`](../../src/test/resources/godclass/tc03_clase_vacia.puml)
+
+![TC-03](imagenes/tc03_clase_vacia.png)
+
+### 7.2 Casos sin aroma
+
+#### TC-04: N<5 con clase grande
+**Qué testea:** que el tamaño mínimo (`n < 5`) se valide antes de evaluar las clases.
+**Valores clave:** `n = 4`; `Escuela` con `NOM = 12`, `NOA = 10`.
+**Resultado esperado:** sin aromas.
+**Archivo:** [`tc04_n_menor_5_clase_grande.puml`](../../src/test/resources/godclass/tc04_n_menor_5_clase_grande.puml)
+
+![TC-04](imagenes/tc04_n_menor_5_clase_grande.png)
+
+#### TC-05: N<5 por tipos excluidos
+**Qué testea:** que `n` cuente solo clases analizables: `interface`, `enum` y `<<interface>>` quedan afuera.
+**Valores clave:** 7 elementos declarados, `n = 4`; `Escuela` con `NOM = 12`, `NOA = 10`.
+**Resultado esperado:** sin aromas.
+**Archivo:** [`tc05_n_menor_5_tipos_excluidos.puml`](../../src/test/resources/godclass/tc05_n_menor_5_tipos_excluidos.puml)
+
+![TC-05](imagenes/tc05_n_menor_5_tipos_excluidos.png)
+
+#### TC-06: IQR = 0 y piso
+**Qué testea:** que el piso absoluto evite marcar una clase apenas mayor que el resto cuando la dispersión es nula.
+**Valores clave:** `n = 5`; `NOM = [2,2,2,2,3]`, `NOA = [2,2,2,2,3]`; `U = (7, 5)`.
+**Resultado esperado:** sin aromas.
+**Archivo:** [`tc06_iqr_cero_piso.puml`](../../src/test/resources/godclass/tc06_iqr_cero_piso.puml)
+
+![TC-06](imagenes/tc06_iqr_cero_piso.png)
+
+#### TC-07: Data Class
+**Qué testea:** que constructor, getters, `is` y setters no cuenten en NOM, para no marcar una clase anémica.
+**Valores clave:** `n = 5`; `Alumno` con `NOM = 0` (18 miembros excluidos), `NOA = 8`.
+**Resultado esperado:** sin aromas.
+**Archivo:** [`tc07_data_class.puml`](../../src/test/resources/godclass/tc07_data_class.puml)
+
+![TC-07](imagenes/tc07_data_class.png)
+
+#### TC-08: Solo NOM supera
+**Qué testea:** que se exijan ambas métricas (`∧`) y no baste con NOM.
+**Valores clave:** `n = 5`; `Escuela` con `NOM = 12` (> 7), `NOA = 3` (≤ 5).
+**Resultado esperado:** sin aromas.
+**Archivo:** [`tc08_solo_nom.puml`](../../src/test/resources/godclass/tc08_solo_nom.puml)
+
+![TC-08](imagenes/tc08_solo_nom.png)
+
+#### TC-09: Solo NOA supera
+**Qué testea:** que se exijan ambas métricas (`∧`) y no baste con NOA.
+**Valores clave:** `n = 5`; `Escuela` con `NOM = 3` (≤ 7), `NOA = 10` (> 5).
+**Resultado esperado:** sin aromas.
+**Archivo:** [`tc09_solo_noa.puml`](../../src/test/resources/godclass/tc09_solo_noa.puml)
+
+![TC-09](imagenes/tc09_solo_noa.png)
+
+#### TC-10: Piso estricto
+**Qué testea:** que la comparación con el piso sea estricta (`>`): un valor igual al piso no se reporta.
+**Valores clave:** `n = 5`; `Escuela` con `NOM = 7`, `NOA = 5`; `U = (7, 5)`.
+**Resultado esperado:** sin aromas.
+**Archivo:** [`tc10_piso_estricto.puml`](../../src/test/resources/godclass/tc10_piso_estricto.puml)
+
+![TC-10](imagenes/tc10_piso_estricto.png)
+
+#### TC-11: Cerca de Tukey exacta
+**Qué testea:** que la cerca de Tukey se respete y sea estricta: `Escuela` supera ambos pisos pero queda igual a la cerca.
+**Valores clave:** `n = 5`; `NOM = [2,3,4,5,8]`, `NOA = [1,1,2,3,6]`; `U = (8, 6)`; `Escuela = (8, 6)`.
+**Resultado esperado:** sin aromas.
+**Archivo:** [`tc11_cerca_tukey_exacta.puml`](../../src/test/resources/godclass/tc11_cerca_tukey_exacta.puml)
+
+![TC-11](imagenes/tc11_cerca_tukey_exacta.png)
+
+#### TC-15: Relaciones no cuentan como NOA
+**Qué testea:** que las relaciones UML (`*--`, `o--`, `-->`), incluso etiquetadas como roles de atributo (ej. `: -cursos`, `: -aulas`), no se contabilicen en NOA. `Escuela` supera NOM (8 > 7), tiene 5 atributos propios (= piso) y 4 relaciones salientes: si las relaciones sumaran a NOA tendría 9 (> 5) y dispararía un falso positivo.
+**Valores clave:** `n = 5`; `Escuela` con `NOM = 8` (> 7), `NOA = 5` (= piso, + 4 relaciones ignoradas); `U = (7, 5)`.
+**Resultado esperado:** sin aromas.
+**Archivo:** [`tc15_relaciones_no_cuentan_noa.puml`](../../src/test/resources/godclass/tc15_relaciones_no_cuentan_noa.puml)
+
+![TC-15](imagenes/tc15_relaciones_no_cuentan_noa.png)
+
+### 7.3 Casos con aroma
+
+#### TC-12: Única God Class con N=5
+**Qué testea:** que `n = 5` ya se analice y que una clase muy grande se reporte.
+**Valores clave:** `n = 5`; `Escuela` con `NOM = 12`, `NOA = 10`; `U = (7, 5)`.
+**Resultado esperado:** 1 aroma: `Escuela`.
+**Archivo:** [`tc12_n_5_unica_god_class.puml`](../../src/test/resources/godclass/tc12_n_5_unica_god_class.puml)
+
+![TC-12](imagenes/tc12_n_5_unica_god_class.png)
+
+#### TC-13: Varias grandes, una superior
+**Qué testea:** que solo se reporte la clase que supera la cerca; `Profesor` y `Curso` pasan los pisos pero se ignoran.
+**Valores clave:** `n = 9`; `Escuela = (16, 13)`, `Profesor = (9, 7)`, `Curso = (8, 6)`; `U = (15.5, 12)`.
+**Resultado esperado:** 1 aroma: `Escuela`.
+**Archivo:** [`tc13_varias_grandes_una_superior.puml`](../../src/test/resources/godclass/tc13_varias_grandes_una_superior.puml)
+
+![TC-13](imagenes/tc13_varias_grandes_una_superior.png)
+
+#### TC-14: Dos God Classes
+**Qué testea:** que, si hay más de una clase anómala, se reporten todas.
+**Valores clave:** `n = 8`; `Escuela = (9, 7)`, `Secretaria = (10, 8)`, 6 clases `(2, 2)`; `U = (7, 5.125)`.
+**Resultado esperado:** 2 aromas: `Escuela` y `Secretaria`.
+**Archivo:** [`tc14_dos_god_classes.puml`](../../src/test/resources/godclass/tc14_dos_god_classes.puml)
+
+![TC-14](imagenes/tc14_dos_god_classes.png)
+
+---
+
+# 8. Referencias
 
 - Lanza, M. & Marinescu, R. (2006). *Object-Oriented Metrics in Practice*. Springer. (Estrategia de detección de God Class; umbrales estadísticos).
 - Fowler, M. (1999). *Refactoring: Improving the Design of Existing Code*. Addison-Wesley. (*Large Class*).

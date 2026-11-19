@@ -1,0 +1,60 @@
+@startuml
+class Alumno {
+    -nombre : String
+    -apellido : String
+    -legajo : Integer
+    -dni : String
+    -direccion : String
+    -telefono : String
+    -email : String
+    -activo : Boolean
+    +Alumno(nombre : String)
+    +getNombre() : String
+    +getApellido() : String
+    +getLegajo() : Integer
+    +getDni() : String
+    +getDireccion() : String
+    +getTelefono() : String
+    +getEmail() : String
+    +isActivo() : Boolean
+    +setNombre(n : String) : void
+    +setApellido(a : String) : void
+    +setLegajo(l : Integer) : void
+    +setDni(d : String) : void
+    +setDireccion(d : String) : void
+    +setTelefono(t : String) : void
+    +setEmail(e : String) : void
+    +setActivo(a : Boolean) : void
+}
+class Profesor {
+    -nombre : String
+    -titulo : String
+    +dictarClase(c : Curso) : void
+    +corregirExamen(e : Examen) : void
+}
+class Curso {
+    -nombre : String
+    -cupo : Integer
+    +abrirInscripcion() : void
+    +cerrarInscripcion() : void
+}
+class Aula {
+    -numero : Integer
+    -capacidad : Integer
+    +reservar() : void
+    +liberar() : void
+}
+class Examen {
+    -fecha : Date
+    -temario : String
+    +programar() : void
+    +publicarNotas() : void
+}
+
+Alumno --> "*" Curso : se inscribe
+Alumno ..> "*" Examen : rinde
+Profesor --> "*" Curso : dicta
+Profesor ..> "*" Examen : corrige
+Curso --> "1" Aula : usa
+Curso *-- "*" Examen
+@enduml

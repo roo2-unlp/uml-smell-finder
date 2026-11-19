@@ -1,0 +1,62 @@
+@startuml
+interface Evaluable {
+    +evaluar(e : Examen) : Real
+}
+enum Turno {
+    MANANA
+    TARDE
+    NOCHE
+}
+class Calificable <<interface>> {
+    +calificar() : Real
+}
+class Escuela {
+    -nombre : String
+    -direccion : String
+    -cuit : String
+    -director : String
+    -matricula : Integer
+    -ciclo : Integer
+    -presupuesto : Real
+    -turno : String
+    -telefono : String
+    -email : String
+    +inscribirAlumno(a : Alumno) : void
+    +asignarAula(a : Aula) : void
+    +contratarProfesor(p : Profesor) : void
+    +generarBoletin(a : Alumno) : void
+    +programarExamen(e : Examen) : void
+    +calcularPromedio(a : Alumno) : Real
+    +liquidarSueldos() : void
+    +publicarCalendario() : void
+    +registrarAsistencia(a : Alumno) : void
+    +emitirCertificado(a : Alumno) : void
+    +cobrarCuota(a : Alumno) : void
+    +auditarLegajos() : void
+}
+class Alumno {
+    -nombre : String
+    -legajo : Integer
+    +inscribirse(c : Curso) : void
+    +rendirExamen(e : Examen) : void
+}
+class Profesor {
+    -nombre : String
+    -titulo : String
+    +dictarClase(c : Curso) : void
+    +corregirExamen(e : Examen) : void
+}
+class Curso {
+    -nombre : String
+    -cupo : Integer
+    +abrirInscripcion() : void
+    +cerrarInscripcion() : void
+}
+
+Profesor ..|> Evaluable
+Alumno ..|> Calificable
+Escuela *-- "*" Curso
+Escuela o-- "*" Profesor
+Escuela o-- "*" Alumno
+Curso --> Turno
+@enduml
