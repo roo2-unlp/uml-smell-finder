@@ -76,13 +76,19 @@ public class HubClassSnifferVisitor extends PlantUmlVisitor {
             String left = className(ctx.relEndpoint(0).className());
             String right = className(ctx.relEndpoint(1).className());
 
-            // Una relacion puede leerse de derecha a izquierda si se usa <, por lo que la
-            // direccion de estas relaciones es inversa al orden en el que son listadas las
-            // clases que la conforman.
-            if (arrow.startsWith("<")) {
-                references.add(new Reference(right, left));
-            } else {
+            // La punta (< o >) apunta a la clase conocida y el rombo (o o *) queda del lado
+            // de la clase que conoce. Si la flecha no tiene ninguno, se lee de izquierda a derecha.
+            boolean leftKnowsRight = arrow.endsWith(">") || arrow.startsWith("o") || arrow.startsWith("*");
+            boolean rightKnowsLeft = arrow.startsWith("<") || arrow.endsWith("o") || arrow.endsWith("*");
+            if (!leftKnowsRight && !rightKnowsLeft) {
+                leftKnowsRight = true;
+            }
+
+            if (leftKnowsRight) {
                 references.add(new Reference(left, right));
+            }
+            if (rightKnowsLeft) {
+                references.add(new Reference(right, left));
             }
         }
         return visitChildren(ctx);
