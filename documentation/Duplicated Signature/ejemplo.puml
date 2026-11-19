@@ -1,0 +1,21 @@
+@startuml
+' Este diagrama tiene el olor que detecta el DuplicatedSignatureSniffer
+class Vehiculo {
+    -patente : String
+    +getPatente() : String
+}
+
+class Auto extends Vehiculo {
+    +arrancarMotor() : void
+    +cargarCombustible(litros : Real) : Real
+}
+
+class Moto extends Vehiculo {
+    +arrancarMotor() : void
+    +cargarCombustible(cantidad : Real) : Real
+}
+
+class Bicicleta extends Vehiculo {
+    +pedalear() : void
+}
+@enduml
