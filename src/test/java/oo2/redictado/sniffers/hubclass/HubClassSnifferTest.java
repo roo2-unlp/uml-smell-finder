@@ -473,6 +473,66 @@ public class HubClassSnifferTest {
         assertThrows(IllegalArgumentException.class, () -> finder.sniff(code));
     }
 
+    @Test
+    public void test24AgregacionConRomboALaDerechaCuenta() {
+        assertHubDetected("""
+                @startuml
+                class H
+                class A
+                class B
+                class C
+                H --o A
+                H --o B
+                H --o C
+                @enduml
+                """, 3);
+    }
+
+    @Test
+    public void test25ComposicionConRomboALaDerechaCuenta() {
+        assertHubDetected("""
+                @startuml
+                class H
+                class A
+                class B
+                class C
+                H --* A
+                H --* B
+                H --* C
+                @enduml
+                """, 3);
+    }
+
+    @Test
+    public void test26RelacionEnAmbasDireccionesCuenta() {
+        assertHubDetected("""
+                @startuml
+                class H
+                class A
+                class B
+                class C
+                A <--> H
+                B <--> H
+                C <--> H
+                @enduml
+                """, 3);
+    }
+
+    @Test
+    public void test27FlechaHaciaLaIzquierdaCuenta() {
+        assertHubDetected("""
+                @startuml
+                class H
+                class A
+                class B
+                class C
+                H <-- A
+                H <-- B
+                H <-- C
+                @enduml
+                """, 3);
+    }
+
     private void assertHubDetected(String code, int knownBy) {
         AromaReport report = finder.sniff(code);
 
