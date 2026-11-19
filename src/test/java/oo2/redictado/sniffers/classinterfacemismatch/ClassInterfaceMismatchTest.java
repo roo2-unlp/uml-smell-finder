@@ -28,7 +28,7 @@ public class ClassInterfaceMismatchTest {
 
     @Test
     public void testEjemploConIncumplimientosDelContrato() throws IOException {
-        Path path = Path.of("documentation/Class-interfaz Mismatch/ejemplo.puml");
+        Path path = Path.of("documentation/Class Interface Mismatch/ejemplo.puml");
         String code = Files.readString(path);
 
         AromaReport report = finder.sniff(code);
@@ -140,7 +140,7 @@ public class ClassInterfaceMismatchTest {
 
     private void assertContainsAroma(AromaReport report, int line, String message) {
         assertTrue(report.getAromas().stream().anyMatch(aroma ->
-                ClassInterfaceMismatchSniffer.equals(aroma.name())
+                "ClassInterfaceMismatchSniffer".equals(aroma.name())
                         && line == aroma.line()
                         && message.equals(aroma.message())),
                 "No se encontró el aroma esperado en la línea " + line + ": " + message);

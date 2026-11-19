@@ -32,13 +32,13 @@ class RepositorioConVisibilidadReducida {
 
 ' La operación de instancia de la interfaz se declara estática.
 class RepositorioConOperacionEstatica {
-    {static} + buscar(id : String) : Entidad
+    + {static} buscar(id : String) : Entidad
     + guardar(entidad : Entidad) : void
 }
 
 ' La clase es concreta, pero deja abstracta una operación requerida.
 class RepositorioConOperacionAbstracta {
-    {abstract} + buscar(id : String) : Entidad
+    + {abstract} buscar(id : String) : Entidad
     + guardar(entidad : Entidad) : void
 }
 
