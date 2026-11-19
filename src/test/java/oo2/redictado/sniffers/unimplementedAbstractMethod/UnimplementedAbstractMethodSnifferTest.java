@@ -391,6 +391,25 @@ public class UnimplementedAbstractMethodSnifferTest {
                 """);
     }
 
+    // G. Fuera del alcance: herencia múltiple (solo se analizan clases con un único padre)
+
+    @Test
+    public void testCaso19_HerenciaMultipleNoSeAnaliza() {
+        assertNoReporta("""
+                @startuml
+                abstract class Maquina {
+                    +{abstract} mover(): void
+                }
+                abstract class Bateria {
+                    +{abstract} cargar(): void
+                }
+                class Robot extends Maquina, Bateria {
+                    +apagar(): void
+                }
+                @enduml
+                """);
+    }
+
     // Formas de declarar la herencia y los métodos
 
     @Test
