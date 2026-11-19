@@ -9,6 +9,6 @@ import oo2.redictado.plantuml.PlantUmlVisitor;
 public class PublicVariableSniffer extends PlantUmlSniffer {
     @Override
     protected PlantUmlVisitor createVisitor() {
-        return new PlantUmlVisitor() {};
+        return new PublicVariableSnifferVisitor() {};
     }
 }
