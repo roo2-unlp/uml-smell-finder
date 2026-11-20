@@ -108,6 +108,25 @@ public class GodClassSnifferTest {
     }
 
     @Test
+    public void sniff_ClaseEnCercaDeTukeyExactaConFactorIqrMenorAUnoPuntoCinco_ReportaAromaGodClass() throws IOException {
+        // En tc11 Escuela tiene NOM = 8 (> piso 7) y NOA = 6 (> piso 5), pero con k = 1.5
+        // la cerca de Tukey da U = (8, 6) y no se reporta.
+        // Al reducir únicamente k (iqrFactor) a 1.0, la cerca baja a (7, 5) y Escuela sí se reporta.
+        SnifferParams params = new SnifferParams(Map.of("iqrFactor", "1.0"));
+        SmellFinder<DiagramContext> customFinder = new SmellFinder<>(new PlantUml(), new GodClassSniffer(params));
+        String code = readDiagram("tc11_cerca_tukey_exacta.puml");
+
+        AromaReport report = customFinder.sniff(code);
+
+        assertTrue(report.stinks());
+        assertEquals(1, report.getAromas().size());
+        Aroma aroma = report.getAromas().getFirst();
+        assertEquals("GodClassSniffer", aroma.name());
+        assertEquals(2, aroma.line());
+        assertEquals("God Class: Escuela", aroma.message());
+    }
+
+    @Test
     public void sniff_DiagramaVacio_RetornaSinAromas() throws IOException {
         // TC-01: Diagrama vacío (n = 0)
         String code = readDiagram("tc01_vacio.puml");
