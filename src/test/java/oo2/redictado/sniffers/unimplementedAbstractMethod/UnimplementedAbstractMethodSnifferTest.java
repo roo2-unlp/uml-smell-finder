@@ -2,6 +2,8 @@ package oo2.redictado.sniffers.unimplementedAbstractMethod;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -34,6 +36,25 @@ public class UnimplementedAbstractMethodSnifferTest {
             assertFalse(aroma.message().contains(inocente), aroma.message());
         }
         return aroma;
+    }
+
+    /**
+     * Verifica que haya un aroma por cada clase culpable y que ningún aroma
+     * nombre a las inocentes.
+     */
+    private void assertReporta(String code, List<String> culpables, String... inocentes) {
+        AromaReport report = finder.sniff(code);
+        assertEquals(culpables.size(), report.getAromas().size(), () -> report.getAromas().toString());
+        for (String culpable : culpables) {
+            assertEquals(1, report.getAromas().stream().filter(aroma -> aroma.message().contains(culpable)).count(),
+                    () -> culpable + " en " + report.getAromas());
+        }
+        for (Aroma aroma : report.getAromas()) {
+            assertEquals("UnimplementedAbstractMethodSniffer", aroma.name());
+            for (String inocente : inocentes) {
+                assertFalse(aroma.message().contains(inocente), aroma.message());
+            }
+        }
     }
 
     private void assertNoReporta(String code) {
@@ -247,23 +268,28 @@ public class UnimplementedAbstractMethodSnifferTest {
                 """, "ClienteNormal", "ClientePremium");
     }
 
+    // Un retorno no declarado solo coincide con otro no declarado: m() no es m(): void
     @Test
-    public void testCaso11_RetornoOmitidoEsVoid() {
-        assertReportaSolo("""
+    public void testCaso11_RetornoOmitido() {
+        assertReporta("""
                 @startuml
                 abstract class Alarma {
-                    +{abstract} notificar()
+                    +{abstract} activar()
                 }
                 class AlarmaSonora {
-                    +notificar(): void
+                    +activar()
                 }
                 class AlarmaVisual {
-                    +notificar(): String
+                    +activar(): String
+                }
+                class AlarmaTactil {
+                    +activar(): void
                 }
                 Alarma <|-- AlarmaSonora
                 Alarma <|-- AlarmaVisual
+                Alarma <|-- AlarmaTactil
                 @enduml
-                """, "AlarmaVisual", "AlarmaSonora");
+                """, List.of("AlarmaVisual", "AlarmaTactil"), "AlarmaSonora");
     }
 
     // D. Visibilidad y nombre
@@ -287,9 +313,10 @@ public class UnimplementedAbstractMethodSnifferTest {
                 """, "Auto", "Camion");
     }
 
+    // Una visibilidad no declarada solo coincide con otra no declarada: m() no es +m()
     @Test
-    public void testCaso13_VisibilidadOmitidaEsPublica() {
-        assertReportaSolo("""
+    public void testCaso13_VisibilidadOmitida() {
+        assertReporta("""
                 @startuml
                 abstract class Vehiculo {
                     {abstract} getCantRuedas(): int
@@ -300,10 +327,14 @@ public class UnimplementedAbstractMethodSnifferTest {
                 class Triciclo {
                     # getCantRuedas(): int
                 }
+                class Bicicleta {
+                    getCantRuedas(): int
+                }
                 Vehiculo <|-- Moto
                 Vehiculo <|-- Triciclo
+                Vehiculo <|-- Bicicleta
                 @enduml
-                """, "Triciclo", "Moto");
+                """, List.of("Moto", "Triciclo"), "Bicicleta");
     }
 
     @Test

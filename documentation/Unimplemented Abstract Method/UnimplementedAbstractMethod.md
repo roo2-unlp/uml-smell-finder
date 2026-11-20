@@ -19,7 +19,7 @@ Un método abstracto (`{abstract}`) de la superclase directa se considera implem
 - el mismo tipo de retorno.
 
 
-Sin visibilidad, un método se toma como público (`+`), y sin tipo de retorno, como `void`. Los espacios dentro de los tipos se ignoran.
+No se asumen valores por defecto, porque el diagrama es UML general y no está ligado a Java. Una visibilidad o un tipo de retorno no declarados quedan vacíos, y un valor vacío solo coincide con otro vacío: `m()` no implementa `+m()` ni `#m()`, y `m()` no es lo mismo que `m(): void`. Los espacios dentro de los tipos se ignoran.
 
 
 Los miembros `{static}` no se consideran en absoluto: no generan obligaciones, aunque sean `{abstract}`, ni cuentan como implementación.
