@@ -43,12 +43,34 @@ public class MetodoTest {
 
 
     @Test
-    public void testSinVisibilidadEsPublicoYSinRetornoEsVoid() {
-        Metodo omitido = new Metodo(null, "notificar", List.of(), null, true, false);
+    public void testRetornoNoDeclaradoSoloCoincideConOtroNoDeclarado() {
+        Metodo sinRetorno = new Metodo("+", "activar", List.of(), null, true, false);
 
 
-        assertEquals("+notificar():void", omitido.toString());
-        assertTrue(concreto("+", "notificar", List.of(), "void").implementa(omitido));
+        assertTrue(concreto("+", "activar", List.of(), null).implementa(sinRetorno));
+        assertFalse(concreto("+", "activar", List.of(), "void").implementa(sinRetorno));
+        assertFalse(concreto("+", "activar", List.of(), "String").implementa(sinRetorno));
+        assertFalse(concreto("+", "calcular", List.of("int", "Real"), null).implementa(abstracto));
+    }
+
+
+    @Test
+    public void testVisibilidadNoDeclaradaSoloCoincideConOtraNoDeclarada() {
+        Metodo sinVisibilidad = new Metodo(null, "getCantRuedas", List.of(), "int", true, false);
+
+
+        assertTrue(concreto(null, "getCantRuedas", List.of(), "int").implementa(sinVisibilidad));
+        assertFalse(concreto("+", "getCantRuedas", List.of(), "int").implementa(sinVisibilidad));
+        assertFalse(concreto("#", "getCantRuedas", List.of(), "int").implementa(sinVisibilidad));
+        assertFalse(concreto(null, "calcular", List.of("int", "Real"), "Real").implementa(abstracto));
+    }
+
+
+    @Test
+    public void testLaFirmaMuestraSoloLoDeclarado() {
+        assertEquals("activar()", new Metodo(null, "activar", List.of(), null, true, false).toString());
+        assertEquals("activar()", new Metodo("  ", "activar", List.of(), "", true, false).toString());
+        assertEquals("+activar():void", new Metodo("+", "activar", List.of(), "void", true, false).toString());
     }
 
 
