@@ -1,0 +1,17 @@
+@startuml UML
+
+abstract class Vehiculo {
+     # {abstract} getCantRuedas(): int
+     +{abstract} getKilometros(): Real
+}
+class Auto {
+     +getCantRuedas(): int
+}
+class Camion {
+     # getCantRuedas(): int
+}
+
+Vehiculo <|-- Auto
+Vehiculo <|-- Camion
+
+@enduml

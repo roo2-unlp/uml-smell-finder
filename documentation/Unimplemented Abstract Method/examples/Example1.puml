@@ -1,5 +1,4 @@
-
-@startuml
+@startuml UML
 
 abstract class Persona {
     +{abstract} getNombre(): String
