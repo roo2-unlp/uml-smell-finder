@@ -37,6 +37,85 @@ public class UnimplementedAbstractMethodVisitor extends PlantUmlVisitor {
     // Interfaces, enums y demás tipos que no son clases: quedan fuera del análisis
     private final Set<String> noClases = new HashSet<>();
 
+    // ANALIZAR LAS CLASES UNA VEZ RECORRIDO TODO EL DIAGRAMA
+    @Override
+    public Void visitDiagram(PlantUmlParser.DiagramContext ctx) {
+        visitChildren(ctx);
+        conectarSuperclases();
+        for (Clase clase : clases.values()) {
+            List<Metodo> faltantes = clase.metodosSinImplementar();
+            if (!faltantes.isEmpty()) {
+                String firmas = faltantes.stream().map(Metodo::toString).collect(Collectors.joining(", "));
+                smell("La clase concreta " + clase.getNombre() + " no implementa los métodos abstractos de su superclase "
+                        + clase.getSuperclase().getNombre() + ": " + firmas, lugares.get(clase.getNombre()));
+            }
+        }
+        return null;
+    }
+
+    // RECOLECTAR CLASES, HERENCIAS CON EXTENDS Y MÉTODOS DEL CUERPO
+    @Override
+    public Void visitClassDeclaration(PlantUmlParser.ClassDeclarationContext ctx) {
+        String nombre = nombre(ctx.className());
+        if (ctx.classKind() != null && ctx.classKind().CLASS() == null) {
+            noClases.add(nombre);
+            return visitChildren(ctx);
+        }
+        Clase clase = clase(nombre, ctx);
+        // Si antes apareció solo en una flecha, el aroma pasa a marcar la declaración
+        if (!(lugares.get(nombre) instanceof PlantUmlParser.ClassDeclarationContext)) {
+            lugares.put(nombre, ctx);
+        }
+        if (esAbstracta(ctx)) {
+            clase.marcarAbstracta();
+        }
+
+        PlantUmlParser.ClassTailContext tail = ctx.classTail();
+        if (tail.extendsClause() != null) {
+            for (PlantUmlParser.TypeContext padre : tail.extendsClause().typeList().type()) {
+                heredar(nombre, padre.IDENTIFIER().getText());
+            }
+        }
+        if (tail.classBody() != null) {
+            for (PlantUmlParser.BodyItemContext item : tail.classBody().bodyItem()) {
+                PlantUmlParser.MemberContext miembro = item.member();
+                if (miembro != null) {
+                    agregarMetodo(clase, miembro.visibility(), miembro.memberModifier(), miembro.memberSignature());
+                }
+            }
+        }
+        return visitChildren(ctx);
+    }
+
+    // RECOLECTAR MÉTODOS DECLARADOS FUERA DEL CUERPO (Clase : +metodo())
+    @Override
+    public Void visitMemberExternal(PlantUmlParser.MemberExternalContext ctx) {
+        Clase clase = clase(nombre(ctx.className()), ctx);
+        agregarMetodo(clase, ctx.visibility(), ctx.memberModifier(), ctx.memberSignature());
+        return visitChildren(ctx);
+    }
+
+    // RECOLECTAR HERENCIAS CON FLECHAS (Padre <|-- Hija, Hija --|> Padre)
+    @Override
+    public Void visitRelationship(PlantUmlParser.RelationshipContext ctx) {
+        String flecha = ctx.ARROW().getText();
+        // Las flechas punteadas (..|>) son realizaciones de interfaces, no herencia
+        if (!flecha.contains(".")) {
+            String izquierda = nombre(ctx.relEndpoint(0).className());
+            String derecha = nombre(ctx.relEndpoint(1).className());
+            if (flecha.startsWith("<|")) {
+                clase(izquierda, ctx);
+                clase(derecha, ctx);
+                heredar(derecha, izquierda);
+            } else if (flecha.endsWith("|>")) {
+                clase(izquierda, ctx);
+                clase(derecha, ctx);
+                heredar(izquierda, derecha);
+            }
+        }
+        return visitChildren(ctx);
+    }
+
     // Metodos Auxiliares
 
     /**
