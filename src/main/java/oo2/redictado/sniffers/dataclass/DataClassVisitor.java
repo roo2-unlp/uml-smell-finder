@@ -53,10 +53,12 @@ public class DataClassVisitor extends PlantUmlVisitor {
     }
 
     private boolean esDataClass(PlantUmlParser.ClassDeclarationContext ctx) {
+        List<Miembro> miembros = miembrosDeInstancia(ctx);
+        String nombreClase = ctx.className().getText();
         return esClase(ctx)
-                && tieneAtributosDeInstancia(ctx)
-                && exponeSusDatos(ctx)
-                && noTieneComportamiento(ctx);
+                && tieneAtributosDeInstancia(miembros)
+                && exponeSusDatos(miembros)
+                && noTieneComportamiento(miembros, nombreClase);
     }
 
     private boolean esClase(PlantUmlParser.ClassDeclarationContext ctx) {
@@ -65,8 +67,8 @@ public class DataClassVisitor extends PlantUmlVisitor {
         return abstractaSinClass || esClass;
     }
 
-    private boolean tieneAtributosDeInstancia(PlantUmlParser.ClassDeclarationContext ctx) {
-        for (Miembro miembro : miembrosDeInstancia(ctx)) {
+    private boolean tieneAtributosDeInstancia(List<Miembro> miembros) {
+        for (Miembro miembro : miembros) {
             if (miembro.firma.fieldSignature() != null) {
                 return true;
             }
@@ -74,8 +76,8 @@ public class DataClassVisitor extends PlantUmlVisitor {
         return false;
     }
 
-    private boolean exponeSusDatos(PlantUmlParser.ClassDeclarationContext ctx) {
-        for (Miembro miembro : miembrosDeInstancia(ctx)) {
+    private boolean exponeSusDatos(List<Miembro> miembros) {
+        for (Miembro miembro : miembros) {
             boolean atributoPublico = miembro.firma.fieldSignature() != null
                     && esPublico(miembro.visibilidad);
             boolean accessorNoPrivado = miembro.firma.methodSignature() != null
@@ -88,15 +90,12 @@ public class DataClassVisitor extends PlantUmlVisitor {
         return false;
     }
 
-    private boolean noTieneComportamiento(PlantUmlParser.ClassDeclarationContext ctx) {
-        String nombreClase = ctx.className().getText();
-        for (Miembro miembro : miembrosDeInstancia(ctx)) {
-            PlantUmlParser.MemberSignatureContext firma = miembro.firma;
-            if (firma.methodSignature() == null || esStatic(miembro.modificadores)) {
+    private boolean noTieneComportamiento(List<Miembro> miembros, String nombreClase) {
+        for (Miembro miembro : miembros) {
+            PlantUmlParser.MethodSignatureContext metodo = miembro.firma.methodSignature();
+            if (metodo == null) {
                 continue;
             }
-
-            PlantUmlParser.MethodSignatureContext metodo = firma.methodSignature();
             if (esConstructor(metodo, nombreClase) || esAccessor(metodo)) {
                 continue;
             }
