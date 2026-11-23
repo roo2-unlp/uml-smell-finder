@@ -1,0 +1,17 @@
+
+@startuml
+
+abstract class Persona {
+    +{abstract} getNombre(): String
+}
+class Empleado {
+    +getSueldo(): Real
+}
+class Profesor {
+    +getNombre(): String
+}
+Persona <|-- Empleado
+Persona <|-- Profesor
+
+@enduml
+

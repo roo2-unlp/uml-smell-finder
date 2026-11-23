@@ -50,26 +50,6 @@ Agrega un aroma por cada clase culpable, en la línea donde está declarada, con
 - Un método `{abstract}` en una clase concreta no se reporta por sí mismo.
 
 
-## Ejemplo
-
-
-```plantuml
-@startuml
-abstract class Persona {
-    +{abstract} getNombre(): String
-}
-class Empleado {
-    +getSueldo(): Real
-}
-class Profesor {
-    +getNombre(): String
-}
-Persona <|-- Empleado
-Persona <|-- Profesor
-@enduml
-```
-
-
 ```bash
 mvn -q compile exec:java -Dexec.args="--sniffers UnimplementedAbstractMethodSniffer diagrama.puml"
 ```
