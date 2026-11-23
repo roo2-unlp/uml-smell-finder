@@ -1,7 +1,9 @@
 package oo2.redictado.sniffers.dataclass;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import oo2.redictado.plantuml.PlantUmlVisitor;
 import oo2.redictado.plantuml.antlr4.PlantUmlParser;
@@ -10,23 +12,51 @@ import oo2.redictado.plantuml.antlr4.PlantUmlParser;
 public class DataClassVisitor extends PlantUmlVisitor {
 
     private final List<PlantUmlParser.ClassDeclarationContext> clases = new ArrayList<>();
+    private final Map<String, List<Miembro>> miembrosExternos = new HashMap<>();
 
-    @Override //  con V mayúscula, que es un tipo que solo puede valer null
-            //  El framework eligió Void porque los visitors no devuelven nada útil; solo recorren y anotan.
+    private record Miembro(
+            PlantUmlParser.MemberSignatureContext firma,
+            PlantUmlParser.VisibilityContext visibilidad,
+            List<PlantUmlParser.MemberModifierContext> modificadores
+    ) {}
+
+    @Override
     public Void visitDiagram(PlantUmlParser.DiagramContext ctx) {
         visitChildren(ctx);
         for (PlantUmlParser.ClassDeclarationContext clase : clases) {
-           smell(clase.className().getText() + " es una Data Class: expone sus datos y no tiene comportamiento.", clase);
+            if (esDataClass(clase)) {
+                smell(clase.className().getText()
+                        + " es una Data Class: expone sus datos y no tiene comportamiento.", clase);
+            }
         }
         return null;
     }
 
     @Override
     public Void visitClassDeclaration(PlantUmlParser.ClassDeclarationContext ctx) {
-        if (esClase(ctx) && tieneAtributosDeInstancia(ctx) && exponeSusDatos(ctx)){
-            clases.add(ctx);
-        }
+        clases.add(ctx);
         return visitChildren(ctx);
+    }
+
+    @Override
+    public Void visitMemberExternal(PlantUmlParser.MemberExternalContext ctx) {
+        String nombreClase = ctx.className().getText();
+        Miembro miembro = new Miembro(
+                ctx.memberSignature(),
+                ctx.visibility(),
+                ctx.memberModifier()
+        );
+        miembrosExternos
+            .computeIfAbsent(nombreClase, clave -> new ArrayList<>())
+            .add(miembro);
+        return visitChildren(ctx);
+    }
+
+    private boolean esDataClass(PlantUmlParser.ClassDeclarationContext ctx) {
+        return esClase(ctx)
+                && tieneAtributosDeInstancia(ctx)
+                && exponeSusDatos(ctx)
+                && noTieneComportamiento(ctx);
     }
 
     private boolean esClase(PlantUmlParser.ClassDeclarationContext ctx) {
@@ -36,22 +66,21 @@ public class DataClassVisitor extends PlantUmlVisitor {
     }
 
     private boolean tieneAtributosDeInstancia(PlantUmlParser.ClassDeclarationContext ctx) {
-        for (PlantUmlParser.MemberContext miembro : miembrosDeInstancia(ctx)) {
-            if (miembro.memberSignature().fieldSignature() != null) {
+        for (Miembro miembro : miembrosDeInstancia(ctx)) {
+            if (miembro.firma.fieldSignature() != null) {
                 return true;
             }
         }
         return false;
     }
 
-    // Expone si tiene un atributo público o un accessor que no es privado
     private boolean exponeSusDatos(PlantUmlParser.ClassDeclarationContext ctx) {
-        for (PlantUmlParser.MemberContext miembro : miembrosDeInstancia(ctx)) {
-            PlantUmlParser.MemberSignatureContext firma = miembro.memberSignature();
-            boolean atributoPublico = firma.fieldSignature() != null && esPublico(miembro.visibility());
-            boolean accessorNoPrivado = firma.methodSignature() != null
-                    && esAccessor(firma.methodSignature())
-                    && !esPrivado(miembro.visibility());
+        for (Miembro miembro : miembrosDeInstancia(ctx)) {
+            boolean atributoPublico = miembro.firma.fieldSignature() != null
+                    && esPublico(miembro.visibilidad);
+            boolean accessorNoPrivado = miembro.firma.methodSignature() != null
+                    && esAccessor(miembro.firma.methodSignature())
+                    && !esPrivado(miembro.visibilidad);
             if (atributoPublico || accessorNoPrivado) {
                 return true;
             }
@@ -59,23 +88,51 @@ public class DataClassVisitor extends PlantUmlVisitor {
         return false;
     }
 
-    // Los miembros del cuerpo de la clase, sin los static
-    private List<PlantUmlParser.MemberContext> miembrosDeInstancia(PlantUmlParser.ClassDeclarationContext ctx) {
-        List<PlantUmlParser.MemberContext> miembros = new ArrayList<>();
-        PlantUmlParser.ClassBodyContext cuerpo = ctx.classTail().classBody();
-        if (cuerpo == null) {
-            return miembros;
+    private boolean noTieneComportamiento(PlantUmlParser.ClassDeclarationContext ctx) {
+        String nombreClase = ctx.className().getText();
+        for (Miembro miembro : miembrosDeInstancia(ctx)) {
+            PlantUmlParser.MemberSignatureContext firma = miembro.firma;
+            if (firma.methodSignature() == null || esStatic(miembro.modificadores)) {
+                continue;
+            }
+
+            PlantUmlParser.MethodSignatureContext metodo = firma.methodSignature();
+            if (esConstructor(metodo, nombreClase) || esAccessor(metodo)) {
+                continue;
+            }
+            return false;
         }
-        for (PlantUmlParser.BodyItemContext item : cuerpo.bodyItem()) {
-            PlantUmlParser.MemberContext miembro = item.member();
-            if (miembro != null && !esStatic(miembro.memberModifier())) {
+        return true;
+    }
+
+    private boolean esConstructor(PlantUmlParser.MethodSignatureContext metodo, String nombreClase) {
+        return metodo.IDENTIFIER().getText().equals(nombreClase);
+    }
+
+    private List<Miembro> miembrosDeInstancia(PlantUmlParser.ClassDeclarationContext ctx) {
+        List<Miembro> miembros = new ArrayList<>();
+        String nombreClase = ctx.className().getText();
+        PlantUmlParser.ClassBodyContext cuerpo = ctx.classTail().classBody();
+        if (cuerpo != null) {
+            for (PlantUmlParser.BodyItemContext item : cuerpo.bodyItem()) {
+                PlantUmlParser.MemberContext miembro = item.member();
+                if (miembro != null && !esStatic(miembro.memberModifier())) {
+                    miembros.add(new Miembro(
+                            miembro.memberSignature(),
+                            miembro.visibility(),
+                            miembro.memberModifier()
+                    ));
+                }
+            }
+        }
+        for (Miembro miembro : miembrosExternos.getOrDefault(nombreClase, List.of())) {
+            if (!esStatic(miembro.modificadores)) {
                 miembros.add(miembro);
             }
         }
         return miembros;
     }
 
-    // getX() o isX() sin parámetros, o setX(valor) con un parámetro
     private boolean esAccessor(PlantUmlParser.MethodSignatureContext metodo) {
         String nombre = metodo.IDENTIFIER().getText();
         int parametros = metodo.paramList() == null ? 0 : metodo.paramList().param().size();
@@ -84,7 +141,6 @@ public class DataClassVisitor extends PlantUmlVisitor {
         return getter || setter;
     }
 
-    // El nombre empieza con el prefijo y sigue una mayúscula: getNombre sí, getter no
     private boolean tienePrefijo(String nombre, String prefijo) {
         return nombre.length() > prefijo.length()
                 && nombre.startsWith(prefijo)

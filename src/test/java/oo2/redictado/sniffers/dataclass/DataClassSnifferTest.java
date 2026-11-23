@@ -284,9 +284,9 @@ public class DataClassSnifferTest {
                 Alumno : +getDato() : int
 
                 class Direccion {
-                    -calle : String
+                    +calle : String
                 }
-                class Profesor{ -nombre:String}    
+                class Profesor{ +nombre:String}    
                 @enduml
                 """;
 
