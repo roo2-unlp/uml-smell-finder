@@ -9,9 +9,9 @@ Una clase se considera *Data Class* si expone sus datos y no tiene comportamient
 1. **Es una clase**, concreta o abstracta. Se incluyen las clases abstractas porque ser abstracta solo impide crear instancias directamente: igual puede definir atributos y accessors sin comportamiento, y todas sus subclases heredan ese problema. No se analizan interfaces, enumeraciones ni otros tipos (`entity`, `struct`, `exception`, `annotation`, etc.), porque representan otros conceptos y no clases que guardan estado.
 2. **Tiene atributos de instancia.** Los atributos `{static}` no cuentan, porque existen una sola vez para toda la clase y no forman parte de cada objeto. Suelen usarse para constantes, como una tasa de interés fija, o para valores que comparten todas las instancias, como un contador de objetos creados. Una *Data Class* se define por los datos propios que lleva cada una de sus instancias, y un atributo `{static}` no es un dato de ninguna instancia en particular.
 3. **Expone sus datos:** tiene al menos un accessor que no es privado, o al menos un atributo público (`+`).
-4. **No tiene comportamiento:** todos sus métodos son accessors. No se tienen en cuenta:
-   - los métodos `{static}`, porque no tienen acceso a los datos de ningún objeto: no existe un `this`, así que no pueden leer ni modificar los atributos de instancia.
-   - los constructores, porque solo inicializan el objeto al crearlo, y toda clase tiene alguno. No son comportamiento sobre los datos una vez creado el objeto.
+4. **No tiene comportamiento de instancia adicional:** todos sus métodos de instancia que no sean constructores son accessors. No se tienen en cuenta:
+   - los métodos `{static}`, porque son operaciones asociadas a la clase, no a una instancia concreta. Un método estático sí puede recibir un objeto y operar sobre él; se excluye porque este sniffer evalúa el comportamiento propio de las instancias. Por esa decisión, un método estático que implemente lógica de negocio no impide que la clase sea reportada.
+   - los constructores, porque corresponden a la creación e inicialización del objeto, no a su comportamiento una vez creado. Se ignoran como categoría de método; esto no afirma que la inicialización nunca contenga lógica propia.
 
 Un *accessor* es un método `getX()` o `isX()` sin parámetros, o `setX(valor)` con un único parámetro. Después del prefijo tiene que venir una mayúscula, así que `get()`, `getter()`, `issue()` y `setup(valor)` no son accessors. Un *constructor* es un método con el mismo nombre que la clase.
 
