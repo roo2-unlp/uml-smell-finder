@@ -9,9 +9,9 @@ Este sniffer reporta una clase como *Data Class* cuando cumple todas estas condi
 1. **Es una clase**, concreta o abstracta. Se incluyen las abstractas porque, aunque no puedan instanciarse directamente, pueden declarar atributos y accessors que sus subclases hereden. No se analizan interfaces, enumeraciones ni otros tipos (`entity`, `struct`, `exception`, `annotation`, etc.), aunque algunos puedan representar datos: este sniffer se enfoca en el smell *Data Class* aplicado a clases del modelo orientado a objetos.
 2. **Tiene atributos de instancia.** Los atributos `{static}` no cuentan porque pertenecen a la clase y son compartidos, en lugar de formar parte del estado individual de cada objeto.
 3. **Expone sus datos:** tiene al menos un accessor que no es privado, o al menos un atributo público (`+`).
-4. **No tiene comportamiento de instancia adicional:** todos sus métodos de instancia, excepto los constructores, son accessors. Se excluyen:
-   - Los métodos `{static}`, porque son operaciones asociadas a la clase, no a una instancia concreta. Un método estático sí puede recibir un objeto y operar sobre él; se excluye porque este sniffer evalúa el comportamiento propio de las instancias. Por esa decisión, un método estático con lógica de negocio no impide que la clase sea reportada.
-   - Los constructores, porque corresponden a la creación e inicialización del objeto, no a su comportamiento una vez creado. Se ignoran aunque su inicialización pueda contener lógica propia.
+4. **No tiene comportamiento:** todos sus métodos de instancia, excepto los constructores, son accessors. Se excluyen:
+   - Los métodos `{static}`, porque son operaciones asociadas a la clase, no a una instancia concreta. 
+   - Los constructores, porque corresponden a la creación e inicialización del objeto, no a su comportamiento una vez creado. 
 
 Un *accessor* es un método `getX()` o `isX()` sin parámetros, o `setX(valor)` con un único parámetro. Después del prefijo tiene que venir una mayúscula; por eso `get()`, `getter()`, `issue()` y `setup(valor)` no son accessors. El sniffer reconoce los accessors y constructores por su firma, sin analizar el cuerpo de los métodos. Un *constructor* es un método con el mismo nombre que la clase.
 
